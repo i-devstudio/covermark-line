@@ -1,0 +1,131 @@
+body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+/* Page Control */
+.page { display: none; min-height: 100vh; width: 100%; opacity: 0; }
+.page.active { display: block; animation: fadeIn 0.4s forwards; }
+#page-home.active, #page-condition.active { display: flex; flex-direction: column; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Button & UI */
+
+.btn-black, .bth-sendgift {
+    background: #015c46; color: #fff; padding: 0.8rem 2.5rem;
+    border-radius: 8px; text-transform: uppercase;
+    letter-spacing: 0.1em; font-size: 0.8rem; transition: all 0.2s;
+    cursor: pointer; position: relative; z-index: 50;
+}
+.btn-black{
+	font-size: 14px;
+}
+.btn-black:active { transform: scale(0.96); opacity: 0.8; }
+
+.input-field label { display: block; font-size: 14px; text-transform: uppercase; color: #999; margin-bottom: 5px; }
+.input-field input, .input-field select {
+    width: 100%; border-bottom: 1px solid #eee; padding: 10px 0; outline: none; transition: border-color 0.3s; font-size: 14px;
+}
+.input-field input:focus { border-color: #B8860B; }
+
+/* Swiper Customize */
+.swiper { width: 100%; padding-bottom: 30px; }
+.swiper-slide { width: 250px; transition: transform 0.5s; opacity: 0.4; }
+.swiper-slide-active { opacity: 1; transform: scale(1.1); }
+.product-card-3-4 {
+    aspect-ratio: 3/4; background: #fff; border-radius: 15px;
+    overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+}
+.product-card-3-4 img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Loader Animation */
+.animate-loading-bar { animation: loading 2s infinite ease-in-out; }
+@keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* Swiper ข้อความ */
+.messageSwiper {
+    width: 100%;
+    padding-bottom: 4px !important;
+}
+
+.message-item {
+    /* background: #f9f9f9; */
+    padding: 12px 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    border: 1px solid rgb(205, 205, 205);
+    transition: all 0.3s ease;
+    cursor: pointer;
+	margin-top: 4px;
+}
+
+/* เมื่อข้อความถูกเลือก (อยู่ตรงกลาง) */
+.messageSwiper .swiper-slide-active .message-item {
+    /* background: #000; */
+    color: #000;
+    border-color: #B8860B;
+    transform: scale(1.05);
+    /* box-shadow: 0 10px 20px rgba(0,0,0,0.1); */
+}
+
+/* ปรับระยะห่าง Swiper สินค้าเล็กน้อย */
+.productSwiper {
+    padding-bottom: 20px !important;
+}
+
+.swiper-pagination-bullet-active {
+    background: #B8860B !important; /* สีทอง Covermark */
+}
+
+#page-summary {
+    background-color: #fcfcfc;
+}
+
+/* ปรับปุ่มให้เป็นสี่เหลี่ยมตามต้องการ */
+#page-summary .btn-primary, 
+#page-summary button {
+    border-radius: 0px !important; /* เหลี่ยมคมพรีเมียม */
+}
+
+/* เพิ่มแอนิเมชันให้รูปภาพดูมีมิติ */
+#summary-img {
+    transition: transform 10s ease-out;
+}
+
+#page-summary.active #summary-img {
+    transform: scale(1.1); /* ค่อยๆ ซูมเบาๆ เมื่อเข้าหน้านี้ */
+}
+
+/* ปุ่ม Music สไตล์ Minimal */
+.music-btn-minimal {
+    border: 1px solid #015c46; /* สีเขียว Covermark */
+    background: transparent;
+    color: #015c46;
+    padding: 6px 15px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    font-weight: 500;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 0px; /* คงความเหลี่ยมตามภาพ */
+}
+ิี
+.music-btn-minimal:hover {
+    background-color: rgba(1, 92, 70, 0.05);
+}
+
+/* หากต้องการให้ปุ่มหน้า Summary หน้าตาเหมือนกัน */
+#page-summary .music-btn-minimal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    background: white; /* กันพื้นหลังกลืน */
+}
+
+input::placeholder {
+	font-size: 12px;
+}
+

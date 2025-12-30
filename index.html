@@ -2,235 +2,165 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Covermark Valentine's Day</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@200;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    
-    <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #fcfcfc; color: #1a1a1a; }
-        .page { display: none; min-height: 100vh; flex-direction: column; }
-        .page.active { display: flex; }
-        .bg-gold { background-color: #B8860B; }
-        .text-gold { color: #B8860B; }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* Swiper Custom */
-        .swiper { width: 100%; padding-top: 20px; padding-bottom: 50px; }
-        .swiper-slide { background-position: center; background-size: cover; width: 250px; }
-        .product-card { transition: transform 0.3s; }
-        .swiper-slide-active .product-card { transform: scale(1.1); border: 2px solid #B8860B; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="bg-[#f2f2f2] text-[#333]"> <div id="app" class="relative max-w-[960px] mx-auto min-h-screen bg-white shadow-2xl">
+    <!-- <div id="loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white transition-opacity duration-500">
+        <img src="covermark-logo.png" alt="Logo" class="w-50 mb-4 animate-pulse">
+        <div class="w-12 h-1 bg-gray-100 overflow-hidden">
+            <div class="w-full h-full bg-black animate-loading-bar"></div>
+        </div>
+    </div> -->
 
-    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-        <img src="https://img5.pic.in.th/file/secure-sv1/COVERMARK.jpg" alt="Logo" class="w-32 mb-4 animate-pulse">
-        <p class="text-sm tracking-widest uppercase">Loading Experience...</p>
-    </div>
-
-    <div id="app">
-        <section id="page-home" class="page active p-6 flex items-center justify-center text-center">
-            <img src="https://img5.pic.in.th/file/secure-sv1/COVERMARK.jpg" class="w-40 mb-10">
-            <h1 class="text-xl mb-8">ส่งมอบของขวัญแด่คนที่คุณรัก</h1>
-            <button onclick="navigateTo('page-condition')" class="bg-black text-white px-12 py-3 rounded-full uppercase tracking-widest text-sm">เริ่มเลย</button>
+    <div id="app" class="relative">
+        <section id="page-home" class="page active">
+            <div class="flex flex-col items-center justify-center h-screen px-6 text-center">
+                <img src="covermark-logo.png" class="w-48 mb-6">
+                <!-- <h1 class="text-xl font-light tracking-widest mb-12">ส่งมอบของขวัญแด่คนที่คุณรัก</h1> -->
+                <button type="button" onclick="navigateTo('page-condition')" class="btn-black">เริ่มเลย</button>
+            </div>
         </section>
 
-        <section id="page-condition" class="page p-8 flex-col justify-between">
-            <div>
-                <h2 class="text-lg font-semibold mb-6 text-center">เงื่อนไขการรับสิทธิ์</h2>
-                <p class="text-sm leading-relaxed text-gray-600">
-                    จำกัดสิทธิ์การรับบริการและผลิตภัณฑ์ขนาดทดลอง ได้เพียง 1 ครั้งต่อท่านตลอดแคมเปญ หากผลิตภัณฑ์ทดลองหมด ทางบริษัทฯ ขอสงวนสิทธิ์ในการเปลี่ยนแปลงผลิตภัณฑ์ทดลองโดยไม่แจ้งล่วงหน้า
-                </p>
-            </div>
-            <button onclick="navigateTo('page-sender')" class="bg-black text-white w-full py-4 rounded-full uppercase tracking-widest text-sm mt-10">ยอมรับ</button>
-        </section>
-
-        <section id="page-sender" class="page p-4">
-            <div class="flex justify-between items-center mb-4">
-                <span class="text-xs uppercase tracking-widest">Select Gift</span>
-                <button id="bgm-btn" onclick="toggleMusic()"><span id="music-icon">🔇</span></button>
-            </div>
-
-            <div class="swiper mySwiper">
-                <div class="swiper-wrapper" id="product-list">
+        <section id="page-condition" class="page">
+            <div class="flex flex-col h-screen p-8">
+                <div class="flex-grow flex flex-col justify-center">
+                    <h2 class="text-xl font-semibold mb-8 text-center uppercase tracking-widest">เงื่อนไขการรับสิทธิ์</h2>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-600 leading-relaxed text-sm text-center">
+                        จำกัดสิทธิ์การรับบริการและผลิตภัณฑ์ขนาดทดลอง ได้เพียง 1 ครั้งต่อท่านตลอดแคปเปญ<br><br>หากผลิตภัณฑ์ทดลองหมด ทางบริษัทฯขอสงวนสิทธิ์ ในการเปลี่ยนแปลงผลิตภัณฑ์ทดลองโดยไม่แจ้งล่วงหน้า
                     </div>
-            </div>
-
-            <div class="space-y-4 mt-4">
-                <div>
-                    <label class="text-xs text-gray-400">ชื่อผู้รับ</label>
-                    <input type="text" id="receiver-name" class="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors">
                 </div>
-                <div>
-                    <label class="text-xs text-gray-400">ชื่อผู้ส่ง</label>
-                    <input type="text" id="sender-name" class="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400">ข้อความบอกรัก</label>
-                    <select id="love-message" class="w-full border-b border-gray-300 py-2 outline-none">
-                        <option>ขอบคุณที่มีกันนะ</option>
-                        <option>แทนความรักจากใจ</option>
-                        <option>สุขสันต์วันวาเลนไทน์</option>
-                        <option>รักเธอที่สุดนะ</option>
-                    </select>
-                </div>
-                <button onclick="prepareSummary()" class="w-full bg-black text-white py-4 rounded-full uppercase tracking-widest text-sm">สรุปข้อมูล</button>
+                <button type="button"   class="btn-black w-full mb-8" onclick="startWithSound()">ยอมรับ</button>
             </div>
         </section>
 
-        <section id="page-summary" class="page p-6">
-            <h2 class="text-center text-lg mb-8 uppercase tracking-widest">สรุปข้อมูลความสุข</h2>
-            <div id="summary-card" class="bg-white p-6 shadow-xl rounded-lg text-center border border-gray-100">
-                <img id="summary-img" src="" class="w-3/4 mx-auto mb-4 rounded shadow">
-                <p class="text-sm text-gray-400">To: <span id="sum-receiver" class="text-black font-semibold"></span></p>
-                <p id="sum-msg" class="my-4 italic text-gold font-medium"></p>
-                <p class="text-xs text-gray-400 text-right">- <span id="sum-sender"></span></p>
-            </div>
-            <div class="flex gap-4 mt-10">
-                <button onclick="navigateTo('page-sender')" class="w-1/2 border border-black py-3 rounded-full text-sm">แก้ไข</button>
-                <button onclick="sendGift()" class="w-1/2 bg-black text-white py-3 rounded-full text-sm">ส่งของขวัญ</button>
-            </div>
-        </section>
+        <section id="page-sender" class="page">
+
+			<div class="min-h-screen flex flex-col bg-[#fcfcfc]">
+				<!-- <div class="p-6 flex justify-between items-center">
+					<span class="text-[10px] tracking-[0.3em] text-gray-400 uppercase font-semibold">Valentine's Collection</span>
+					<button onclick="toggleMusic()" class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+						<span id="music-icon">🔇</span>
+					</button>
+				</div> -->
+				<div class="p-8 flex justify-between items-center">
+					<span class="text-[9px] tracking-[0.4em] text-gray-400 uppercase font-bold"></span>
+					
+					<button onclick="toggleMusic()" class="music-btn-minimal">
+						MUSIC: <span id="music-status">OFF</span>
+					</button>
+				</div>
+		
+				<div class="flex-grow flex items-center overflow-hidden py-0">
+    			<audio id="bgm" autoplay loop src="jazz-background-music-349165.mp3"></audio>
+
+					<div class="swiper productSwiper">
+						<div class="swiper-wrapper" id="product-list"></div>
+					</div>
+				</div>
+		
+				<div class="bg-white p-8 space-y-6 shadow-[0_-20px_40px_rgba(0,0,0,0.03)] rounded-t-[0rem]">
+					<div class="space-y-4">
+						<div class="input-field">
+							<label>ชื่อผู้รับ<span style="color:red;">*</span></label>
+							<input type="text" id="receiver-name" value="Mark"  class="text-lg">
+						</div>
+						<div class="input-field">
+							<label>ชื่อผู้ส่ง<span style="color:red;">*</span></label>
+							<input type="text" id="sender-name" value="Meen" class="text-lg">
+						</div>
+						
+						<div class="input-field !border-none">
+							<label class="mb-3">เลือกข้อความบอกรัก (ปัดซ้าย-ขวา)</label>
+							<div class="swiper messageSwiper mt-2">
+								<div class="flex items-center justify-center gap-4 text-gray-800"></div>
+								<!-- <span class="bracket">&lt;</span> -->
+								<div class="swiper-wrapper" id="message-list"></div>
+								<!-- <span class="bracket">&gt;</span> -->
+								<div class="swiper-pagination !bottom-0"></div>
+							</div>
+						</div>
+					</div>
+					<button type="button" onclick="prepareSummary()" class="btn-black w-full py-4 text-base">ถัดไป</button>
+				</div>
+			</div>
+		</section>
+
+        <section id="page-summary" class="page bg-white">
+			<div class="p-8 flex justify-between items-center mb-4 bg-white">				
+				<button onclick="toggleMusic()" class="music-btn-minimal">
+					MUSIC: <span id="music-status-summary">OFF</span>
+				</button>
+			</div>
+			<div class=" flex flex-col items-center justify-center">
+				<!-- <h2 class="text-center font-light tracking-[0.4em] mb-6 text-[10px] text-gray-400 uppercase">Preview Your Gift</h2> -->
+				<div class="w-full max-w-[450px]  shadow-[0_20px_60px_rgba(0,0,0,0.08)] border border-gray-100">
+					<div class="relative overflow-hidden aspect-[3/4]">
+						<img id="summary-img" class="w-full h-full object-cover">
+						<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+						<div class="absolute bottom-8 left-0 right-0 text-center px-6">
+							<div>
+
+							</div>
+							<p class="text-[10px] text-white/70 uppercase tracking-[0.3em] mb-2">To: <span id="sum-receiver" class="text-white font-semibold"></span></p>
+							<p id="sum-msg" class="text-white text-lg font-light italic tracking-wide"></p>
+							<p class="text-[9px] text-gray-300 uppercase tracking-[0.2em] mb-8">- จากคุณ <span id="sum-sender"></span> -</p>
+							
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="flex w-full gap-2 px-6 mt-6">
+					<button onclick="navigateTo('page-sender')" 
+							class="flex-1 py-3  bg-[#000] text-[#fff] text-[12px] tracking-widest uppercase transition-all active:scale-95">
+						แก้ไข
+					</button>
+					
+					<button onclick="sendGift()" 
+							class="flex-1 py-3 bg-[#005e46] text-white text-[12px] tracking-widest uppercase transition-all active:scale-95 shadow-lg">
+						ส่งของขวัญ
+					</button>
+				</div>
+				
+			</div>
+		</section>
     </div>
 
-    <audio id="bgm" loop src="YOUR_VALENTINE_MUSIC_URL.mp3"></audio>
+	<section id="page-receiver" class="page">
+		<div class="flex flex-col h-screen items-center justify-center p-10 text-center">
+			<div id="gift-container" class="relative cursor-pointer">
+				<div id="gift-box" class="w-48 h-48 bg-[#015c46] flex items-center justify-center shadow-2xl relative z-10">
+					<div class="absolute w-full h-4 bg-[#B8860B]"></div>
+					<div class="absolute h-full w-4 bg-[#B8860B]"></div>
+					<span class="text-white text-4xl animate-bounce">🎁</span>
+				</div>
+				<div id="glow" class="absolute inset-0 bg-yellow-400 blur-3xl opacity-0 scale-50 transition-all duration-700"></div>
+			</div>
+			<h2 class="mt-12 text-lg font-light tracking-widest text-[#015c46] animate-pulse">เขย่า หรือ คลิกที่กล่องเพื่อเปิด</h2>
+			<p class="mt-4 text-xs text-gray-400">คุณได้รับของขวัญพิเศษจากคุณ <span id="rec-sender-name" class="font-bold"></span></p>
+		</div>
+	</section>
+
+	<section id="page-reveal" class="page bg-white">
+		<div class="flex flex-col h-screen p-8 items-center justify-center">
+			<div class="w-full mb-8 relative">
+				<img id="reveal-img" class="w-full aspect-[3/4] object-cover shadow-2xl border-4 border-[#015c46]">
+				<div class="absolute -top-4 -right-4 bg-[#015c46] text-white p-4 text-[10px] tracking-tighter">SPECIAL GIFT</div>
+			</div>
+			<h3 id="reveal-msg" class="text-lg italic my-6 text-center text-[#333]"></h3>
+			<button onclick="window.location.reload()" class="btn-primary w-full">รับสิทธิ์ของคุณ</button>
+		</div>
+	</section>
+</div>
+
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        // ข้อมูลสินค้า
-        const products = [
-            { id: 1, name: "Product A", img: "https://via.placeholder.com/300x400?text=Product+1", fullImg: "https://via.placeholder.com/600x800?text=Premium+1" },
-            { id: 2, name: "Product B", img: "https://via.placeholder.com/300x400?text=Product+2", fullImg: "https://via.placeholder.com/600x800?text=Premium+2" },
-            { id: 3, name: "Product C", img: "https://via.placeholder.com/300x400?text=Product+3", fullImg: "https://via.placeholder.com/600x800?text=Premium+3" }
-        ];
-
-        let selectedProduct = products[0];
-        let isMusicPlaying = false;
-
-        // --- LIFF & NAVIGATION ---
-        async function initLiff() {
-            try {
-                await liff.init({ liffId: "2008756827-zANFfOMQ" });
-                if (liff.isLoggedIn()) {
-                    const profile = await liff.getProfile();
-                    document.getElementById('sender-name').value = profile.displayName;
-                } else {
-                    liff.login();
-                }
-            } catch (err) { console.error('LIFF Init Error', err); }
-            document.getElementById('loader').style.display = 'none';
-        }
-
-        function navigateTo(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active', 'fade-in');
-            window.scrollTo(0, 0);
-        }
-
-        // --- RENDER PRODUCTS ---
-        const swiperWrapper = document.getElementById('product-list');
-        products.forEach(p => {
-            swiperWrapper.innerHTML += `
-                <div class="swiper-slide">
-                    <div class="product-card p-2 bg-white rounded shadow-sm">
-                        <img src="${p.img}" class="w-full aspect-[3/4] object-cover">
-                        <p class="text-center text-xs mt-2">${p.name}</p>
-                    </div>
-                </div>`;
-        });
-
-        const swiper = new Swiper(".mySwiper", {
-            effect: "coverflow",
-            grabCursor: true,
-            centeredSlides: true,
-            slidesPerView: "auto",
-            loop: true,
-            on: {
-                slideChange: function () {
-                    selectedProduct = products[this.realIndex];
-                }
-            }
-        });
-
-        // --- PREPARE SUMMARY ---
-        function prepareSummary() {
-            const receiver = document.getElementById('receiver-name').value;
-            if (!receiver) return alert('กรุณาระบุชื่อผู้รับ');
-            
-            document.getElementById('sum-receiver').innerText = receiver;
-            document.getElementById('sum-sender').innerText = document.getElementById('sender-name').value;
-            document.getElementById('sum-msg').innerText = `"${document.getElementById('love-message').value}"`;
-            document.getElementById('summary-img').src = selectedProduct.img;
-            
-            navigateTo('page-summary');
-        }
-
-        // --- SHARE TARGET PICKER ---
-        async function sendGift() {
-            const sender = document.getElementById('sender-name').value;
-            const receiver = document.getElementById('receiver-name').value;
-            const message = document.getElementById('love-message').value;
-            
-            // สร้าง URL สำหรับผู้รับ (ส่งค่าไปผ่าน Query String)
-            const shareUrl = `https://liff.line.me/2008756827-zANFfOMQ?mode=receiver&sender=${encodeURIComponent(sender)}&receiver=${encodeURIComponent(receiver)}&giftId=${selectedProduct.id}&msg=${encodeURIComponent(message)}`;
-
-            try {
-                const result = await liff.shareTargetPicker([
-                    {
-                        "type": "flex",
-                        "altText": `คุณได้รับของขวัญจากคุณ ${sender}`,
-                        "contents": {
-                            "type": "bubble",
-                            "body": {
-                                "type": "box", "layout": "vertical", "paddingAll": "0px",
-                                "contents": [
-                                    {
-                                        "type": "box", "layout": "vertical",
-                                        "contents": [
-                                            { "type": "image", "url": "https://img5.pic.in.th/file/secure-sv1/COVERMARK.jpg", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover" },
-                                            {
-                                                "type": "box", "layout": "vertical", "position": "absolute", "offsetBottom": "80px", "offsetStart": "0px", "offsetEnd": "0px", "alignItems": "center",
-                                                "contents": [
-                                                    { "type": "text", "text": `To: ${receiver}`, "weight": "bold", "color": "#ffffff", "size": "md" },
-                                                    { "type": "text", "text": message, "color": "#ffffff", "size": "sm" }
-                                                ]
-                                            },
-                                            {
-                                                "type": "button", "action": { "type": "uri", "label": "เปิดกล่องของขวัญ", "uri": shareUrl },
-                                                "style": "primary", "color": "#B8860B", "height": "sm", "position": "absolute", "offsetBottom": "20px", "offsetStart": "50px", "offsetEnd": "50px"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ]);
-                if (result) {
-                    liff.closeWindow();
-                }
-            } catch (error) {
-                console.error("Error sending message:", error);
-            }
-        }
-
-        function toggleMusic() {
-            const bgm = document.getElementById('bgm');
-            if (isMusicPlaying) {
-                bgm.pause();
-                document.getElementById('music-icon').innerText = '🔇';
-            } else {
-                bgm.play();
-                document.getElementById('music-icon').innerText = '🔊';
-            }
-            isMusicPlaying = !isMusicPlaying;
-        }
-
-        initLiff();
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
