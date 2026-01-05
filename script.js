@@ -289,68 +289,7 @@ function prepareSummary() {
 //         window.addEventListener('devicemotion', handleMotion);
 //     }
 // }
-// ปรับปรุงฟังก์ชันขอสิทธิ์ให้สมบูรณ์ขึ้น
-async function requestShakePermission() {
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-            const permission = await DeviceMotionEvent.requestPermission();
-            if (permission === 'granted') {
-                window.addEventListener('devicemotion', handleMotion);
-                console.log("Shake sensor: ON");
-            }
-        } catch (error) {
-            console.error("Permission denied", error);
-        }
-    } else {
-        // สำหรับ Android หรือ Desktop
-        window.addEventListener('devicemotion', handleMotion);
-    }
-}
 
-// function setupReceiverMode(params) {
-//     navigateTo('page-receiver');
-    
-//     // ตั้งค่าข้อมูลผู้รับ... (ตามโค้ดเดิม)
-
-//     // เพิ่มตัวดักจับการคลิกครั้งแรกเพื่อขอสิทธิ์ Sensor
-//     const giftContainer = document.getElementById('gift-container');
-//     giftContainer.addEventListener('click', function() {
-//         requestShakePermission(); // ขอสิทธิ์เขย่า
-//         handleOpenGift();        // ถ้าเขย่าไม่ได้ อย่างน้อยคลิกก็ต้องเปิดได้
-//     }, { once: true }); // ให้ทำงานแค่ครั้งเดียว
-// }
-
-function setupReceiverMode(params) {
-    isOpening = false; // รีเซ็ตสถานะป้องกันการค้าง
-    navigateTo('page-receiver');
-    
-    // ดึงข้อมูลจาก URL
-    const sender = params.get('sender') || "เพื่อนของคุณ";
-    const giftId = params.get('giftId');
-    const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
-
-    // แสดงชื่อผู้ส่ง
-    const recSenderName = document.getElementById('rec-sender-name');
-    if (recSenderName) recSenderName.innerText = sender;
-    
-    // เตรียมข้อมูลสินค้าหน้า Reveal
-    const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
-    const revealImg = document.getElementById('reveal-img');
-    const revealMsg = document.getElementById('reveal-msg');
-    
-    if (revealImg) revealImg.src = product.bgImg;
-    if (revealMsg) revealMsg.innerText = `"${msg}"`;
-
-    // ผูกคำสั่งคลิกที่ตัวกล่อง
-    const giftContainer = document.getElementById('gift-container');
-    if (giftContainer) {
-        giftContainer.onclick = (e) => {
-            e.preventDefault(); // ป้องกัน Browser ทำงานซ้ำซ้อน
-            requestShakePermission(); // ขอสิทธิ์เขย่าสำหรับ iPhone
-            handleOpenGift();        // สั่งเปิดกล่อง
-        };
-    }
-}
 
 // function handleOpenGift() {
 //     if (isOpening) return; // ถ้ากำลังทำงานอยู่ ไม่ต้องทำซ้ำ
@@ -490,55 +429,40 @@ function updateMusicUI(status) {
     if (s1) s1.innerText = status;
     if (s2) s2.innerText = status;
 }
-// function toggleMusic() {
-//     const audio = document.getElementById('bgm');
-//     const statusSender = document.getElementById('music-status');
-//     const statusSummary = document.getElementById('music-status-summary');
-    
-//     if (isMusicPlaying) {
-//         audio.pause();
-//         isMusicPlaying = false;
-//         if (statusSender) statusSender.innerText = 'OFF';
-//         if (statusSummary) statusSummary.innerText = 'OFF';
-//     } else {
-//         audio.play();
-//         isMusicPlaying = true;
-//         if (statusSender) statusSender.innerText = 'ON';
-//         if (statusSummary) statusSummary.innerText = 'ON';
-//     }
-// }
 
-// --- แก้ไขส่วนการเขย่าให้สมบูรณ์ ---
+// --- การเขย่า---
 
-let lastUpdate = 0;
-let lastX = 0, lastY = 0, lastZ = 0;
+// ตัวแปรสำหรับคำนวณการเขย่า (ใช้ชุดเดียวทั่วทั้งไฟล์)
+let lastX = null, lastY = null, lastZ = null;
+let moveCounter = 0; // นับจำนวนครั้งที่เขย่า เพื่อป้องกันเครื่องไหวเบาๆ แล้วเปิด
 
-// ฟังก์ชันตรวจจับการเคลื่อนไหว
 function handleMotion(event) {
-    if (isOpening) return; // ถ้ากำลังเปิดอยู่ ให้หยุดทำงาน
+    if (isOpening) return;
 
-    let curTime = Date.now();
-    // ตรวจสอบทุกๆ 100 มิลลิวินาที
-    if ((curTime - lastUpdate) > 100) {
-        let diffTime = curTime - lastUpdate;
-        lastUpdate = curTime;
+    // เลือกใช้ acceleration (ถ้ามี) หรือ accelerationIncludingGravity
+    let acc = event.acceleration || event.accelerationIncludingGravity;
+    if (!acc || acc.x === null) return;
 
-        let acc = event.accelerationIncludingGravity;
-        if (!acc) return;
+    if (lastX !== null) {
+        // หาความแตกต่างของการเคลื่อนที่ในแต่ละแกน
+        let deltaX = Math.abs(lastX - acc.x);
+        let deltaY = Math.abs(lastY - acc.y);
+        let deltaZ = Math.abs(lastZ - acc.z);
 
-        // คำนวณความเร็วในการเขย่า
-        let speed = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ) / diffTime * 10000;
-
-        // ปรับค่าความแรง (ลองเริ่มที่ 800 ถ้าเขย่ายากให้ลดเหลือ 600)
-        if (speed > 500) { 
-            console.log("Shake detected! Speed:", speed);
-            handleOpenGift(); // เรียกฟังก์ชันเปิดกล่อง
+        // ค่า Threshold สำหรับ Android (แนะนำ 12 - 18)
+        // ถ้ามีการเคลื่อนไหวแรงเกิน 15 ในแกนใดแกนหนึ่ง
+        if ((deltaX > 15 && deltaY > 15) || (deltaX > 15 && deltaZ > 15) || (deltaY > 15 && deltaZ > 15)) {
+            moveCounter++;
+            if (moveCounter >= 2) { // ต้องเขย่าไป-กลับอย่างน้อย 2 ครั้งถึงจะทำงาน
+                handleOpenGift();
+                moveCounter = 0;
+            }
         }
-
-        lastX = acc.x;
-        lastY = acc.y;
-        lastZ = acc.z;
     }
+
+    lastX = acc.x;
+    lastY = acc.y;
+    lastZ = acc.z;
 }
 
 // ปรับปรุงฟังก์ชันขอสิทธิ์ให้เรียกใช้ handleMotion ได้จริง
@@ -571,6 +495,104 @@ if (giftContainer) {
         handleOpenGift(); // คลิกแล้วให้เปิดเลย พร้อมกับเปิด Sensor ทิ้งไว้ด้วย
     });
 }
+
+// ปรับปรุงฟังก์ชันขอสิทธิ์ให้สมบูรณ์ขึ้น
+async function requestShakePermission() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const permission = await DeviceMotionEvent.requestPermission();
+            if (permission === 'granted') {
+                window.addEventListener('devicemotion', handleMotion);
+                console.log("Shake sensor: ON");
+            }
+        } catch (error) {
+            console.error("Permission denied", error);
+        }
+    } else {
+        // สำหรับ Android หรือ Desktop
+        window.addEventListener('devicemotion', handleMotion);
+    }
+}
+
+// function setupReceiverMode(params) {
+//     navigateTo('page-receiver');
+    
+//     // ตั้งค่าข้อมูลผู้รับ... (ตามโค้ดเดิม)
+
+//     // เพิ่มตัวดักจับการคลิกครั้งแรกเพื่อขอสิทธิ์ Sensor
+//     const giftContainer = document.getElementById('gift-container');
+//     giftContainer.addEventListener('click', function() {
+//         requestShakePermission(); // ขอสิทธิ์เขย่า
+//         handleOpenGift();        // ถ้าเขย่าไม่ได้ อย่างน้อยคลิกก็ต้องเปิดได้
+//     }, { once: true }); // ให้ทำงานแค่ครั้งเดียว
+// }
+
+function setupReceiverMode(params) {
+    isOpening = false; // รีเซ็ตสถานะป้องกันการค้าง
+    navigateTo('page-receiver');
+    
+    // ดึงข้อมูลจาก URL
+    const sender = params.get('sender') || "เพื่อนของคุณ";
+    const giftId = params.get('giftId');
+    const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
+
+    // แสดงชื่อผู้ส่ง
+    const recSenderName = document.getElementById('rec-sender-name');
+    if (recSenderName) recSenderName.innerText = sender;
+    
+    // เตรียมข้อมูลสินค้าหน้า Reveal
+    const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
+    const revealImg = document.getElementById('reveal-img');
+    const revealMsg = document.getElementById('reveal-msg');
+    
+    if (revealImg) revealImg.src = product.bgImg;
+    if (revealMsg) revealMsg.innerText = `"${msg}"`;
+
+    // ผูกคำสั่งคลิกที่ตัวกล่อง
+    const giftContainer = document.getElementById('gift-container');
+    if (giftContainer) {
+        giftContainer.onclick = (e) => {
+            e.preventDefault(); // ป้องกัน Browser ทำงานซ้ำซ้อน
+            requestShakePermission(); // ขอสิทธิ์เขย่าสำหรับ iPhone
+            handleOpenGift();        // สั่งเปิดกล่อง
+        };
+    }
+}
+// function setupReceiverMode(params) {
+//     isOpening = false;
+//     navigateTo('page-receiver');
+    
+//     // ตั้งค่าข้อมูลผู้ส่ง/ผู้รับตามปกติ...
+//     const sender = params.get('sender') || "เพื่อนของคุณ";
+//     document.getElementById('rec-sender-name').innerText = sender;
+
+//     const giftContainer = document.getElementById('gift-container');
+//     if (giftContainer) {
+//         // ใช้ฟังก์ชันเดียวรองรับทั้ง iOS และ Android
+//         giftContainer.addEventListener('click', async function startSensor() {
+//             // 1. ขอสิทธิ์ (สำหรับ iOS)
+//             if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+//                 try {
+//                     const response = await DeviceMotionEvent.requestPermission();
+//                     if (response === 'granted') {
+//                         window.addEventListener('devicemotion', handleMotion, true);
+//                     }
+//                 } catch (e) { console.error(e); }
+//             } else {
+//                 // 2. สำหรับ Android: ผูก Event ทันทีหลังจากมีการคลิก
+//                 window.addEventListener('devicemotion', handleMotion, true);
+//                 console.log("Android Sensor Activated");
+//             }
+            
+//             // สั่งสั่นเครื่องเบาๆ เพื่อบอกว่าระบบรับรู้แล้ว (เฉพาะ Android)
+//             if (navigator.vibrate) navigator.vibrate(50);
+
+//             // ถ้าเขย่าไม่ไปจริงๆ อย่างน้อยคลิกแล้วต้องเปิดได้
+//             handleOpenGift(); 
+//         }, { once: true }); // ให้ทำงานแค่ครั้งเดียวตอนคลิกครั้งแรก
+//     }
+// }
+
 
 function updateMusicUI(status) {
     const s1 = document.getElementById('music-status');
