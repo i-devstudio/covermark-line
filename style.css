@@ -1,8 +1,30 @@
 body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
 
 /* Page Control */
-.page { display: none; min-height: 100vh; width: 100%; opacity: 0; }
-.page.active { display: block; animation: fadeIn 0.4s forwards; }
+/* .page { display: none; min-height: 100vh; width: 100%; opacity: 0; }
+.page.active { display: block; animation: fadeIn 0.4s forwards; } */
+.page {
+    display: none; /* ซ่อนไว้ก่อนตามที่คุยกัน */
+    width: 100%;
+    min-height: 100vh;
+    /* เพิ่ม 3 บรรทัดนี้เพื่อดึงทุกอย่างเข้ากลาง */
+    flex-direction: column;
+    align-items: center;    /* จัดกึ่งกลางแนวนอน */
+    justify-content: center; /* จัดกึ่งกลางแนวตั้ง */
+}
+
+/* เฉพาะหน้าที่มีคลาส active เท่านั้นที่จะแสดง */
+.page.active {
+    display: flex; /* หรือ block ตามที่ตั้งค่าไว้ */
+}
+.page {
+	position: relative;
+}
+.sub-page {
+	position: absolute;
+	bottom: 120px;
+}
+
 #page-home.active, #page-condition.active { display: flex; flex-direction: column; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -11,9 +33,12 @@ body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transpare
 
 .btn-black, .bth-sendgift {
     background: #015c46; color: #fff; padding: 0.8rem 2.5rem;
-    border-radius: 8px; text-transform: uppercase;
+    border-radius: 6px; text-transform: uppercase;
     letter-spacing: 0.1em; font-size: 0.8rem; transition: all 0.2s;
     cursor: pointer; position: relative; z-index: 50;
+}
+.btn-send {
+	border-radius: 6px;
 }
 .btn-black{
 	font-size: 14px;
@@ -31,7 +56,7 @@ body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transpare
 .swiper-slide { width: 250px; transition: transform 0.5s; opacity: 0.4; }
 .swiper-slide-active { opacity: 1; transform: scale(1.1); }
 .product-card-3-4 {
-    aspect-ratio: 3/4; background: #fff; border-radius: 15px;
+    aspect-ratio: 3/4; background: #fff; border-radius: 12px;
     overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     border: 1px solid #f0f0f0;
 }
@@ -50,7 +75,7 @@ body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transpare
 .message-item {
     /* background: #f9f9f9; */
     padding: 12px 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     text-align: center;
     font-size: 0.8rem;
     color: #666;
@@ -85,7 +110,7 @@ body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transpare
 /* ปรับปุ่มให้เป็นสี่เหลี่ยมตามต้องการ */
 #page-summary .btn-primary, 
 #page-summary button {
-    border-radius: 0px !important; /* เหลี่ยมคมพรีเมียม */
+    border-radius: 6px !important; /* เหลี่ยมคมพรีเมียม */
 }
 
 /* เพิ่มแอนิเมชันให้รูปภาพดูมีมิติ */
@@ -109,7 +134,8 @@ body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transpare
     text-transform: uppercase;
     transition: all 0.3s ease;
     cursor: pointer;
-    border-radius: 0px; /* คงความเหลี่ยมตามภาพ */
+    border-radius: 6px; /* คงความเหลี่ยมตามภาพ */
+
 }
 ิี
 .music-btn-minimal:hover {
@@ -129,3 +155,31 @@ input::placeholder {
 	font-size: 12px;
 }
 
+/* คลาสสำหรับปุ่มตอนที่เป็น ON (เรืองแสง) */
+.music-on-glow {
+    /* ใช้ !important เพื่อป้องกัน Tailwind หรือ Inline style ข่ม */
+    background-color: #28A745 !important; 
+    color: #ffffff !important;
+    border: 1.5px solid #28A745 !important;
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.7); /* เพิ่มความเข้มรัศมีเรืองแสง */
+    transition: all 0.3s ease;
+    animation: glow-pulse 2s infinite;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* คลาสสำหรับปุ่มตอนที่เป็น OFF (จางลง) */
+music-btn-minimal {
+    background-color: transparent;
+    color: #999;
+    border: 1.5px solid #ccc;
+    box-shadow: none;
+}
+
+/* Animation เพิ่มความมีชีวิตชีวา */
+@keyframes glow-pulse {
+    0% { box-shadow: 0 0 5px rgba(1, 92, 70, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(1, 92, 70, 0.5); }
+    100% { box-shadow: 0 0 5px rgba(1, 92, 70, 0.2); }
+}

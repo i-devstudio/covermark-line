@@ -18,7 +18,7 @@
     </div> -->
 
     <div id="app" class="relative">
-        <section id="page-home" class="page active">
+        <section id="page-home" class="page "> 
             <div class="flex flex-col items-center justify-center h-screen px-6 text-center">
                 <img src="covermark-logo.png" class="w-48 mb-6">
                 <!-- <h1 class="text-xl font-light tracking-widest mb-12">ส่งมอบของขวัญแด่คนที่คุณรัก</h1> -->
@@ -39,7 +39,6 @@
         </section>
 
         <section id="page-sender" class="page">
-
 			<div class="min-h-screen flex flex-col bg-[#fcfcfc]">
 				<!-- <div class="p-6 flex justify-between items-center">
 					<span class="text-[10px] tracking-[0.3em] text-gray-400 uppercase font-semibold">Valentine's Collection</span>
@@ -51,12 +50,12 @@
 					<span class="text-[9px] tracking-[0.4em] text-gray-400 uppercase font-bold"></span>
 					
 					<button onclick="toggleMusic()" class="music-btn-minimal">
-						MUSIC: <span id="music-status">OFF</span>
+						MUSIC: <span id="music-status">ON</span>
 					</button>
 				</div>
 		
 				<div class="flex-grow flex items-center overflow-hidden py-0">
-    			<!-- <audio id="bgm" autoplay loop src="jazz-background-music-349165.mp3"></audio> -->
+    			<audio id="bgm" autoplay loop src="jazz-background-music-349165.mp3"></audio>
 
 					<div class="swiper productSwiper">
 						<div class="swiper-wrapper" id="product-list"></div>
@@ -92,8 +91,8 @@
 
         <section id="page-summary" class="page bg-white">
 			<div class="p-8 flex justify-between items-center mb-4 bg-white">				
-				<button onclick="toggleMusic()" class="music-btn-minimal">
-					MUSIC: <span id="music-status-summary">OFF</span>
+	<button onclick="toggleMusic()" class="music-btn-minimal">
+					MUSIC: <span id="music-status-summary">ON</span>
 				</button>
 			</div>
 			<div class=" flex flex-col items-center justify-center">
@@ -115,9 +114,9 @@
 					</div>
 					
 				</div>
-				<div class="flex w-full gap-2 px-6 mt-6">
+				<div class="flex w-full gap-2 px-6 mt-6 ">
 					<button onclick="navigateTo('page-sender')" 
-							class="flex-1 py-3  bg-[#000] text-[#fff] text-[12px] tracking-widest uppercase transition-all active:scale-95">
+							class="flex-1 py-3 bg-[#000] text-[#fff] text-[12px] tracking-widest uppercase transition-all active:scale-95">
 						แก้ไข
 					</button>
 					
@@ -132,17 +131,31 @@
     </div>
 
 	<section id="page-receiver" class="page">
-		<div class="flex flex-col h-screen items-center justify-center p-10 text-center">
-			<div id="gift-container" class="relative cursor-pointer">
-				<div id="gift-box" class="w-48 h-48 bg-[#015c46] flex items-center justify-center shadow-2xl relative z-10">
-					<div class="absolute w-full h-4 bg-[#B8860B]"></div>
-					<div class="absolute h-full w-4 bg-[#B8860B]"></div>
-					<span class="text-white text-4xl animate-bounce">🎁</span>
+		<div class="absolute inset-0 z-0">
+			<img src="openGift.jpg" class="w-full h-full object-cover" alt="Background">
+			<div class="absolute inset-0 bg-black/20"></div>
+		</div>
+	
+		<div class="sub-page z-10 flex flex-col h-screen items-center justify-center p-10 text-center w-full">
+			
+			<div id="gift-container" class="relative cursor-pointer transition-transform active:scale-95">
+				<div id="gift-box" class="flex items-center justify-center shadow-2xl relative z-10">
+					<!-- <div class="absolute w-full h-4 bg-[#B8860B]"></div>
+					<div class="absolute h-full w-4 bg-[#B8860B]"></div> -->
+				<!-- <span class="text-white text-4xl animate-bounce z-1">🎁</span> -->
+
 				</div>
+				
 				<div id="glow" class="absolute inset-0 bg-yellow-400 blur-3xl opacity-0 scale-50 transition-all duration-700"></div>
 			</div>
-			<h2 class="mt-12 text-lg font-light tracking-widest text-[#015c46] animate-pulse">เขย่า หรือ คลิกที่กล่องเพื่อเปิด</h2>
-			<p class="mt-4 text-xs text-gray-400">คุณได้รับของขวัญพิเศษจากคุณ <span id="rec-sender-name" class="font-bold"></span></p>
+	
+			<h2 class="mt-12 text-lg font-light tracking-[0.2em] text-white drop-shadow-md animate-pulse uppercase">
+				เขย่า หรือ คลิกที่กล่องเพื่อเปิด
+			</h2>
+			
+			<p class="mt-4 text-xs text-white/80 drop-shadow-sm italic">
+				คุณได้รับของขวัญพิเศษจากคุณ <span id="rec-sender-name" class="font-bold text-white"></span>
+			</p>
 		</div>
 	</section>
 

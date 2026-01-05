@@ -43,28 +43,67 @@ function startWithSound() {
     const statusSender = document.getElementById('music-status');
     const statusSummary = document.getElementById('music-status-summary');
 
-    // 1. สั่งเล่นเพลงทันทีที่กดปุ่ม
-    audio.play().then(() => {
-        isMusicPlaying = true;
-        // อัปเดต UI ปุ่มเพลงทุกจุดให้เป็น ON
-        if (statusSender) statusSender.innerText = 'ON';
-        if (statusSummary) statusSummary.innerText = 'ON';
-    }).catch(error => {
-        console.log("Autoplay blocked, waiting for next interaction");
-    });
+    // // 1. สั่งเล่นเพลงทันทีที่กดปุ่ม
+    // audio.play().then(() => {
+    //     isMusicPlaying = true;
+    //     // อัปเดต UI ปุ่มเพลงทุกจุดให้เป็น ON
+    //     if (statusSender) statusSender.innerText = 'ON';
+    //     if (statusSummary) statusSummary.innerText = 'ON';
+    // }).catch(error => {
+    //     console.log("Autoplay blocked, waiting for next interaction");
+    // });
 
     // 2. ไปที่หน้าถัดไป (Condition หรือหน้าเลือกของขวัญ)
     navigateTo('page-sender'); 
 }
+
+// function startWithSound() {
+//     // ปลดล็อก Audio Context สำหรับ Browser
+//     const audio = document.getElementById('bgm');
+//     audio.play().then(() => {
+//         // ถ้าเล่นได้ ให้รันยาวไป
+//         isMusicPlaying = true;
+//         updateMusicUI('ON');
+//     }).catch(() => {
+//         // ถ้าโดนบล็อก ก็ยังให้ไปหน้าถัดไปได้
+//         console.log("Audio waiting for user interaction");
+//     });
+
+//     navigateTo('page-sender'); 
+// }
 // --- 1. ระบบเริ่มต้น (LIFF & Logic) ---
+// async function startApp() {
+//     try {
+//         await liff.init({ liffId: LIFF_ID });
+//         const urlParams = new URLSearchParams(window.location.search);
+        
+//         if (urlParams.get('mode') === 'receiver') {
+//             setupReceiverMode(urlParams);
+//         } else {
+//             if (liff.isLoggedIn()) {
+//                 const profile = await liff.getProfile();
+//                 const senderInput = document.getElementById('sender-name');
+//                 if (senderInput) senderInput.value = profile.displayName;
+//             }
+//         }
+//     } catch (e) {
+//         console.error("LIFF Error:", e);
+//     } finally {
+//         hideLoader();
+//     }
+// }
 async function startApp() {
     try {
         await liff.init({ liffId: LIFF_ID });
         const urlParams = new URLSearchParams(window.location.search);
         
         if (urlParams.get('mode') === 'receiver') {
+            // ถ้าเป็นผู้รับ ให้ไปหน้า receiver ทันที
             setupReceiverMode(urlParams);
         } else {
+            // ถ้าไม่ใช่ผู้รับ ถึงจะแสดงหน้าแรก (Home)
+            navigateTo('page-home');
+            
             if (liff.isLoggedIn()) {
                 const profile = await liff.getProfile();
                 const senderInput = document.getElementById('sender-name');
@@ -72,11 +111,15 @@ async function startApp() {
             }
         }
     } catch (e) {
-        console.error("LIFF Error:", e);
+        console.error("LIFF Init Error:", e);
+        // กรณี Error ให้กลับไปหน้า Home เพื่อความปลอดภัย
+        navigateTo('page-home');
     } finally {
         hideLoader();
     }
 }
+
+
 
 function hideLoader() {
     const loader = document.getElementById('loader');
@@ -202,18 +245,47 @@ function prepareSummary() {
 }
 
 // --- 4. ระบบสำหรับผู้รับ (Receiver Flow) ---
+// function setupReceiverMode(params) {
+//     navigateTo('page-receiver');
+//     document.getElementById('rec-sender-name').innerText = params.get('sender') || "เพื่อนของคุณ";
+    
+//     const product = PRODUCTS.find(p => p.id == params.get('giftId')) || PRODUCTS[0];
+//     const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
+    
+//     document.getElementById('reveal-img').src = product.bgImg; // ใช้ภาพ bgImg ตอนเปิด
+//     document.getElementById('reveal-msg').innerText = `"${msg}"`;
+    
+//     // คลิกเพื่อเปิด
+//     document.getElementById('gift-container').onclick = handleOpenGift;
+// }
+// ฟังก์ชันสำหรับขออนุญาตเข้าถึง Sensor (เรียกใช้ตอนผู้รับกด "คลิกที่กล่องเพื่อเปิด")
+async function requestShakePermission() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const permission = await DeviceMotionEvent.requestPermission();
+            if (permission === 'granted') {
+                window.addEventListener('devicemotion', handleMotion);
+            }
+        } catch (error) {
+            console.error("Permission denied", error);
+        }
+    } else {
+        // สำหรับ Android หรือ Browser ที่ไม่ต้องขออนุญาต
+        window.addEventListener('devicemotion', handleMotion);
+    }
+}
+
 function setupReceiverMode(params) {
     navigateTo('page-receiver');
-    document.getElementById('rec-sender-name').innerText = params.get('sender') || "เพื่อนของคุณ";
     
-    const product = PRODUCTS.find(p => p.id == params.get('giftId')) || PRODUCTS[0];
-    const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
-    
-    document.getElementById('reveal-img').src = product.bgImg; // ใช้ภาพ bgImg ตอนเปิด
-    document.getElementById('reveal-msg').innerText = `"${msg}"`;
-    
-    // คลิกเพื่อเปิด
-    document.getElementById('gift-container').onclick = handleOpenGift;
+    // ตั้งค่าข้อมูลผู้รับ... (ตามโค้ดเดิม)
+
+    // เพิ่มตัวดักจับการคลิกครั้งแรกเพื่อขอสิทธิ์ Sensor
+    const giftContainer = document.getElementById('gift-container');
+    giftContainer.addEventListener('click', function() {
+        requestShakePermission(); // ขอสิทธิ์เขย่า
+        handleOpenGift();        // ถ้าเขย่าไม่ได้ อย่างน้อยคลิกก็ต้องเปิดได้
+    }, { once: true }); // ให้ทำงานแค่ครั้งเดียว
 }
 
 function handleOpenGift() {
@@ -229,6 +301,25 @@ function handleOpenGift() {
 }
 
 // --- 5. ยูทิลิตี้ ---
+// function navigateTo(pageId) {
+//     document.querySelectorAll('.page').forEach(p => {
+//         p.classList.remove('active');
+//         p.style.display = 'none';
+//     });
+    
+//     const target = document.getElementById(pageId);
+//     if (target) {
+//         target.classList.add('active');
+        
+//         // กำหนดการแสดงผล Layout
+//         const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
+//         target.style.display = isFlex ? 'flex' : 'block';
+        
+//         // เมื่อเปลี่ยนหน้า เราจะไม่สั่ง audio.pause() หรือ audio.currentTime = 0 
+//         // เพลงจะเล่นต่อไปเรื่อยๆ ตามสถานะ isMusicPlaying
+//         window.scrollTo(0, 0);
+//     }
+// }
 function navigateTo(pageId) {
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
@@ -239,33 +330,119 @@ function navigateTo(pageId) {
     if (target) {
         target.classList.add('active');
         
-        // กำหนดการแสดงผล Layout
         const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
         target.style.display = isFlex ? 'flex' : 'block';
+
+        // --- จุดที่เพลงจะเริ่มทำงาน ---
+        if (pageId === 'page-sender') {
+			const audio = document.getElementById('bgm');
+			// ถ้าเพลงยังไม่เล่น ให้สั่งเล่นและตั้งค่าเป็น ON
+			if (!isMusicPlaying) {
+				audio.play().then(() => {
+					isMusicPlaying = true;
+					updateMusicUI('ON');
+				}).catch(e => {
+					isMusicPlaying = false;
+					updateMusicUI('OFF');
+				});
+			} else {
+				// ถ้าเพลงเล่นอยู่แล้ว (จากการกด startWithSound) ให้มั่นใจว่า UI แสดง ON
+				updateMusicUI('ON');
+			}
+		}
         
-        // เมื่อเปลี่ยนหน้า เราจะไม่สั่ง audio.pause() หรือ audio.currentTime = 0 
-        // เพลงจะเล่นต่อไปเรื่อยๆ ตามสถานะ isMusicPlaying
         window.scrollTo(0, 0);
     }
 }
 
+// ปรับปรุงฟังก์ชัน toggle ให้แม่นยำขึ้น
 function toggleMusic() {
     const audio = document.getElementById('bgm');
-    const statusSender = document.getElementById('music-status');
-    const statusSummary = document.getElementById('music-status-summary');
     
+    // ถ้าเพลงเล่นอยู่ (isMusicPlaying เป็น true) ให้สั่งหยุด
     if (isMusicPlaying) {
         audio.pause();
         isMusicPlaying = false;
-        if (statusSender) statusSender.innerText = 'OFF';
-        if (statusSummary) statusSummary.innerText = 'OFF';
-    } else {
-        audio.play();
-        isMusicPlaying = true;
-        if (statusSender) statusSender.innerText = 'ON';
-        if (statusSummary) statusSummary.innerText = 'ON';
+        updateMusicUI('OFF');
+    } 
+    // ถ้าเพลงหยุดอยู่ ให้สั่งเล่น
+    else {
+        audio.play().then(() => {
+            isMusicPlaying = true;
+            updateMusicUI('ON');
+        }).catch(e => console.log("Playback failed"));
     }
 }
+
+// ฟังก์ชันอัปเดตข้อความบนปุ่ม
+function updateMusicUI(status) {
+    const s1 = document.getElementById('music-status');
+    const s2 = document.getElementById('music-status-summary');
+    if (s1) s1.innerText = status;
+    if (s2) s2.innerText = status;
+}
+// function toggleMusic() {
+//     const audio = document.getElementById('bgm');
+//     const statusSender = document.getElementById('music-status');
+//     const statusSummary = document.getElementById('music-status-summary');
+    
+//     if (isMusicPlaying) {
+//         audio.pause();
+//         isMusicPlaying = false;
+//         if (statusSender) statusSender.innerText = 'OFF';
+//         if (statusSummary) statusSummary.innerText = 'OFF';
+//     } else {
+//         audio.play();
+//         isMusicPlaying = true;
+//         if (statusSender) statusSender.innerText = 'ON';
+//         if (statusSummary) statusSummary.innerText = 'ON';
+//     }
+// }
+
+let lastUpdate = 0;
+let isOpening = false; // กันการเขย่าซ้ำตอนกำลังเล่นแอนิเมชัน
+
+function handleMotion(event) {
+    if (isOpening) return;
+
+    let curTime = Date.now();
+    if ((curTime - lastUpdate) > 100) {
+        let diffTime = curTime - lastUpdate;
+        lastUpdate = curTime;
+
+        let acc = event.accelerationIncludingGravity;
+        let speed = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ) / diffTime * 10000;
+
+        // ปรับค่า Threshold ให้พอเหมาะ (แนะนำประมาณ 800 - 1200 สำหรับวิธีคำนวณนี้)
+        if (speed > 1000) { 
+            handleOpenGift();
+        }
+
+        lastX = acc.x;
+        lastY = acc.y;
+        lastZ = acc.z;
+    }
+}
+function updateMusicUI(status) {
+    const s1 = document.getElementById('music-status');
+    const s2 = document.getElementById('music-status-summary');
+    
+    // ค้นหาปุ่มที่หุ้มข้อความอยู่ (ใช้ parentElement)
+    const btn1 = s1 ? s1.parentElement : null;
+    const btn2 = s2 ? s2.parentElement : null;
+
+    if (s1) s1.innerText = status;
+    if (s2) s2.innerText = status;
+
+    if (status === 'ON') {
+        if (btn1) { btn1.classList.add('music-on-glow'); btn1.classList.remove('music-off-style'); }
+        if (btn2) { btn2.classList.add('music-on-glow'); btn2.classList.remove('music-off-style'); }
+    } else {
+        if (btn1) { btn1.classList.remove('music-on-glow'); btn1.classList.add('music-off-style'); }
+        if (btn2) { btn2.classList.remove('music-on-glow'); btn2.classList.add('music-off-style'); }
+    }
+}
+
 // Start Application
 window.addEventListener('load', () => {
     initSwipers();
