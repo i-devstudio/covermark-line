@@ -530,7 +530,7 @@ function handleMotion(event) {
         let speed = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ) / diffTime * 10000;
 
         // ปรับค่าความแรง (ลองเริ่มที่ 800 ถ้าเขย่ายากให้ลดเหลือ 600)
-        if (speed > 800) { 
+        if (speed > 500) { 
             console.log("Shake detected! Speed:", speed);
             handleOpenGift(); // เรียกฟังก์ชันเปิดกล่อง
         }
