@@ -1,624 +1,270 @@
-const LIFF_ID = "2008756827-zANFfOMQ";
+// 1. GLOBAL STATE
+let finalData = {
+    to: "",
+    from: "",
+    msg: "",
+    img: "",
+    name: ""
+};
+const MY_LIFF_ID = '2008756827-zANFfOMQ';
 
-// 1. ข้อมูลสินค้า (เพิ่ม bgImg สำหรับหน้า Preview และ Reveal)
-const PRODUCTS = [
-    { 
-        id: 1, 
-        name: "Moisture Veil LX", 
-        img: "https://covermark.co.th/wp-content/uploads/2020/03/MoistureVeilLX.jpg", 
-        bgImg: "https://covermark.co.th/wp-content/uploads/2020/04/4935059CMMVNM.png" 
-    },
-    { 
-        id: 2, 
-        name: "Flawless Fit", 
-        img: "https://covermark.co.th/wp-content/uploads/2020/04/FlawlessFit.jpg", 
-        bgImg: "https://covermark.co.th/wp-content/uploads/2020/04/104234189_1524006301105607_3220439053025674423_n-1.jpg" 
-    },
-    { 
-        id: 3, 
-        name: "Moisturecoat Gel (พร้อมพัฟ)		", 
-        img: "https://covermark.co.th/wp-content/uploads/2021/11/Covermark-Moisture-Coat-Gel-600x600-1.png", 
-        bgImg: "https://cosmenet-private.s3-bkk.nipa.cloud/upload/Maker/product-info/covermark/covermark-moisture-coat-gel-1.jpg" 
-    }
-];
-
-const LOVE_MESSAGES = [
-    "ของขวัญแด่คนพิเศษ",
-    "ขอบคุณที่มีกันนะ",
-    "แทนความรักจากใจ",
-    "สุขสันต์วันวาเลนไทน์",
-    "รักเธอที่สุดนะ"
-];
-
-// State Management
-let selectedProduct = PRODUCTS[0];
-let selectedMessage = LOVE_MESSAGES[0];
-let isMusicPlaying = false;
-let shakeThreshold = 15;
-// let lastX, lastY, lastZ;
-
-
-function startWithSound() {
-    const audio = document.getElementById('bgm');
-    const statusSender = document.getElementById('music-status');
-    const statusSummary = document.getElementById('music-status-summary');
-
-    // // 1. สั่งเล่นเพลงทันทีที่กดปุ่ม
-    // audio.play().then(() => {
-    //     isMusicPlaying = true;
-    //     // อัปเดต UI ปุ่มเพลงทุกจุดให้เป็น ON
-    //     if (statusSender) statusSender.innerText = 'ON';
-    //     if (statusSummary) statusSummary.innerText = 'ON';
-    // }).catch(error => {
-    //     console.log("Autoplay blocked, waiting for next interaction");
-    // });
-
-    // 2. ไปที่หน้าถัดไป (Condition หรือหน้าเลือกของขวัญ)
-    navigateTo('page-sender'); 
-}
-
-// function startWithSound() {
-//     // ปลดล็อก Audio Context สำหรับ Browser
-//     const audio = document.getElementById('bgm');
-//     audio.play().then(() => {
-//         // ถ้าเล่นได้ ให้รันยาวไป
-//         isMusicPlaying = true;
-//         updateMusicUI('ON');
-//     }).catch(() => {
-//         // ถ้าโดนบล็อก ก็ยังให้ไปหน้าถัดไปได้
-//         console.log("Audio waiting for user interaction");
-//     });
-
-//     navigateTo('page-sender'); 
-// }
-// --- 1. ระบบเริ่มต้น (LIFF & Logic) ---
-// async function startApp() {
-//     try {
-//         await liff.init({ liffId: LIFF_ID });
-//         const urlParams = new URLSearchParams(window.location.search);
-        
-//         if (urlParams.get('mode') === 'receiver') {
-//             setupReceiverMode(urlParams);
-//         } else {
-//             if (liff.isLoggedIn()) {
-//                 const profile = await liff.getProfile();
-//                 const senderInput = document.getElementById('sender-name');
-//                 if (senderInput) senderInput.value = profile.displayName;
-//             }
-//         }
-//     } catch (e) {
-//         console.error("LIFF Error:", e);
-//     } finally {
-//         hideLoader();
-//     }
-// }
-async function startApp() {
+// 2. INITIALIZATION
+async function initApp() {
     try {
-        await liff.init({ liffId: LIFF_ID });
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        if (urlParams.get('mode') === 'receiver') {
-            // ถ้าเป็นผู้รับ ให้ไปหน้า receiver ทันที
-            setupReceiverMode(urlParams);
-        } else {
-            // ถ้าไม่ใช่ผู้รับ ถึงจะแสดงหน้าแรก (Home)
-            navigateTo('page-home');
-            
-            if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                const senderInput = document.getElementById('sender-name');
-                if (senderInput) senderInput.value = profile.displayName;
-            }
+        await liff.init({ liffId: MY_LIFF_ID });
+        if (!liff.isLoggedIn()) {
+            // หากยังไม่ได้ Login ให้เด้งไปหน้า Login ของ LINE
+            // liff.login(); 
         }
-    } catch (e) {
-        console.error("LIFF Init Error:", e);
-        // กรณี Error ให้กลับไปหน้า Home เพื่อความปลอดภัย
-        navigateTo('page-home');
-    } finally {
-        hideLoader();
+        
+        initSliderLogic();
+        initMessageSelection();
+        console.log("LIFF Initialized");
+    } catch (error) {
+        console.error("LIFF Initialization failed", error);
     }
 }
 
+// 3. SLIDER LOGIC (รองรับทั้ง Click และ Swipe)
+// เก็บข้อมูลสินค้าที่เลือกไว้ในตัวแปร Global เพื่อไปใช้ต่อในหน้าสรุป
 
+function initSliderLogic() {
+    const slider = document.getElementById('giftSlider');
+    const cards = document.querySelectorAll('.gift-card');
 
-function hideLoader() {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.style.display = 'none', 5000);
-    }
-}
+    if (!slider || cards.length === 0) return;
 
-// --- 2. ฟังก์ชันแชร์ (Sender Flow) ---
-async function sendGift() {
-    const sender = document.getElementById('sender-name').value || "เพื่อนของคุณ";
-    const receiver = document.getElementById('receiver-name').value;
-    const msg = selectedMessage; 
+    const selectProduct = (target) => {
+        cards.forEach(c => c.classList.remove('active'));
+        target.classList.add('active');
+        
+        // บันทึกข้อมูลเข้า Global State ทันที
+        finalData.name = target.getAttribute('data-name');
+        finalData.img = target.querySelector('img').src;
+        console.log("Selected:", finalData.name);
+    };
 
-    if (!receiver) {
-        alert("กรุณาระบุชื่อผู้รับ");
-        return;
-    }
-
-    // สร้าง URL โดยส่ง giftId และ msg ไปด้วย
-    const shareUrl = `https://liff.line.me/${LIFF_ID}?mode=receiver&sender=${encodeURIComponent(sender)}&receiver=${encodeURIComponent(receiver)}&giftId=${selectedProduct.id}&msg=${encodeURIComponent(msg)}`;
-
-    if (!liff.isApiAvailable('shareTargetPicker')) {
-        alert("กรุณาเปิดในแอป LINE เพื่อส่งของขวัญ");
-        return;
+    // --- ส่วนที่เพิ่ม: บังคับเลือกชิ้นแรกทันทีที่โหลด ---
+    // ตรวจสอบก่อนว่ายังไม่มีชิ้นไหนถูกเลือก (ป้องกันการ reset ค่าขณะสไลด์)
+    if (!finalData.name) {
+        selectProduct(cards[0]); 
     }
 
-    try {
-        const result = await liff.shareTargetPicker([{
-            "type": "flex",
-            "altText": `คุณได้รับของขวัญจากคุณ ${sender}`,
-            "contents": {
-                "type": "bubble",
-                "body": {
-                    "type": "box", "layout": "vertical", "paddingAll": "0px",
-                    "contents": [{
-                        "type": "box", "layout": "vertical", "contents": [
-                            { 
-                                "type": "image", 
-                                "url": selectedProduct.bgImg, // ใช้ภาพ Background ใน Flex
-                                "size": "full", "aspectRatio": "3:4", "aspectMode": "cover" 
-                            },
-                            { 
-                                "type": "box", "layout": "vertical", "position": "absolute", "offsetBottom": "80px", "offsetStart": "0px", "offsetEnd": "0px", "alignItems": "center", "contents": [
-                                    { "type": "text", "text": `To: ${receiver}`, "weight": "bold", "color": "#ffffff" },
-                                    { "type": "text", "text": msg, "color": "#ffffff", "size": "sm" }
-                                ]
-                            },
-                            { 
-                                "type": "button", 
-                                "action": { "type": "uri", "label": "เปิดกล่องของขวัญ", "uri": shareUrl }, 
-                                "style": "primary", "color": "#015c46", "position": "absolute", "offsetBottom": "20px", "offsetStart": "50px", "offsetEnd": "50px" 
-                            }
-                        ]
-                    }]
+    // --- ระบบ Observer เดิม ---
+    const observerOptions = {
+        root: slider,
+        threshold: 0.6, 
+        rootMargin: '0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        if (window.innerWidth < 768) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    selectProduct(entry.target);
                 }
-            }
-        }]);
-        if (result) liff.closeWindow();
-    } catch (e) {
-        console.error("Share Failed", e);
-    }
-}
-
-// --- 3. ระบบแสดงผล (UI & Swiper) ---
-function initSwipers() {
-    // Product Swiper (หน้าเลือกสินค้า)
-    const prodWrapper = document.getElementById('product-list');
-    const list = [...PRODUCTS, ...PRODUCTS];
-    prodWrapper.innerHTML = list.map(p => `
-        <div class="swiper-slide">
-            <div class="product-card-3-4"><img src="${p.img}"></div>
-            <p class="text-center mt-4 text-[10px] uppercase tracking-widest text-[#015c46]">${p.name}</p>
-        </div>
-    `).join('');
-
-    new Swiper(".productSwiper", {
-        centeredSlides: true, slidesPerView: "auto", spaceBetween: 40, loop: true,
-        on: {
-            slideChange: function() {
-                selectedProduct = PRODUCTS[this.realIndex % PRODUCTS.length];
-            }
+            });
         }
+    }, observerOptions);
+
+    cards.forEach(card => {
+        observer.observe(card);
+        // ระบบคลิกสำหรับ Desktop
+        card.addEventListener('click', function() {
+            if (window.innerWidth >= 768) {
+                selectProduct(this);
+            } else {
+                this.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            }
+        });
     });
-
- // Swiper ข้อความ (แก้ไขเพื่อลด Warning)
- const msgWrapper = document.getElementById('message-list');
- // เพิ่มจำนวนการคัดลอกข้อความเพื่อให้ Swiper Loop ทำงานได้เสถียร (อย่างน้อย 10 items)
- const extendedMessages = [...LOVE_MESSAGES, ...LOVE_MESSAGES]; 
- 
- msgWrapper.innerHTML = extendedMessages.map(m => `
-	 <div class="swiper-slide"><div class="message-item">${m}</div></div>
- `).join('');
-
- new Swiper(".messageSwiper", {
-	 centeredSlides: true,
-	 slidesPerView: "auto", // หรือใส่เป็น 3 สำหรับหน้าจอใหญ่
-	 spaceBetween: 10,
-	 loop: true,
-	 loopedSlides: 5, // กำหนดจำนวนสไลด์ที่ให้ loop แน่นอน
-	 on: {
-		 slideChange: function() {
-			 // ใช้ค่าจาก realIndex เพื่อให้ได้ index ที่ถูกต้องเสมอ
-			 selectedMessage = LOVE_MESSAGES[this.realIndex % LOVE_MESSAGES.length];
-		 }
-	 }
- });
 }
 
-// function prepareSummary() {
-//     const receiver = document.getElementById('receiver-name').value;
-//     if (!receiver) return alert("กรุณาระบุชื่อผู้รับ");
-    
-//     document.getElementById('sum-receiver').innerText = receiver;
-//     document.getElementById('sum-sender').innerText = document.getElementById('sender-name').value || "เพื่อนของคุณ";
-//     document.getElementById('sum-msg').innerText = `"${selectedMessage}"`;
-//     document.getElementById('summary-img').src = openGift.jpg; 
-//     // document.getElementById('summary-img').src = selectedProduct.bgImg; 
-    
-//     navigateTo('page-summary');
-    
-//     // ถ้าเพลงถูกเปิดไว้ตั้งแต่หน้าก่อนหน้า (หน้า 3) เพลงจะเล่นต่อเนื่องมาถึงหน้านี้ทันที
-// }
+// เรียกใช้งานเมื่อโหลดหน้าเว็บ
+document.addEventListener('DOMContentLoaded', initSliderLogic);
 
-function prepareSummary() {
-    const receiver = document.getElementById('receiver-name').value;
-    if (!receiver) return alert("กรุณาระบุชื่อผู้รับ");
+// ฟังก์ชันสำหรับจัดการการเลือก (Visual + Data)
+function selectCard(cardElement) {
+    const cards = document.querySelectorAll('.gift-card');
+    cards.forEach(c => c.classList.remove('active'));
     
-    document.getElementById('sum-receiver').innerText = receiver;
-    document.getElementById('sum-sender').innerText = document.getElementById('sender-name').value || "เพื่อนของคุณ";
-    document.getElementById('sum-msg').innerText = `"${selectedMessage}"`;
+    cardElement.classList.add('active');
     
-    // แก้ไขตรงนี้: ใส่เครื่องหมาย ' ' ครอบชื่อไฟล์
-    document.getElementById('summary-img').src = 'openGift.jpg'; 
+    // บันทึกข้อมูล
+    finalData.img = cardElement.querySelector('img').src;
+    finalData.name = cardElement.getAttribute('data-name');
     
+    console.log("Selected Item:", finalData.name);
+}
+
+// 4. MESSAGE SELECTION (Chips)
+function initMessageSelection() {
+    const chips = document.querySelectorAll('.msg-chip');
+    chips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            chips.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            finalData.msg = this.getAttribute('data-msg');
+        });
+    });
+}
+
+// 5. NAVIGATION & SUMMARY
+function showSummary() {
+    const to = document.getElementById('toName').value.trim();
+    const from = document.getElementById('fromName').value.trim();
+
+    if (!to || !from || !finalData.msg || !finalData.img) {
+        alert("กรุณากรอกชื่อผู้รับ-ผู้ส่ง และเลือกของขวัญ/ข้อความให้ครบถ้วน");
+        return;
+    }
+
+    finalData.to = to;
+    finalData.from = from;
+
+    const summaryDiv = document.getElementById('summary-content');
+    summaryDiv.innerHTML = `
+        <div class="card p-3 border-0 shadow-sm rounded-4 text-center">
+            <img src="${finalData.img}" class="img-fluid rounded-3 mb-3 mx-auto" style="max-height: 180px;">
+            <p class="fw-bold mb-1">ของขวัญ: ${finalData.name}</p>
+            <hr>
+            <p class="mb-1"><strong>ถึง:</strong> ${finalData.to}</p>
+            <p class="text-primary italic">"${finalData.msg}"</p>
+            <p class="text-muted small"><strong>จาก:</strong> ${finalData.from}</p>
+        </div>
+    `;
+
     navigateTo('page-summary');
 }
 
-// --- 4. ระบบสำหรับผู้รับ (Receiver Flow) ---
-// function setupReceiverMode(params) {
-//     navigateTo('page-receiver');
-//     document.getElementById('rec-sender-name').innerText = params.get('sender') || "เพื่อนของคุณ";
-    
-//     const product = PRODUCTS.find(p => p.id == params.get('giftId')) || PRODUCTS[0];
-//     const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
-    
-//     document.getElementById('reveal-img').src = product.bgImg; // ใช้ภาพ bgImg ตอนเปิด
-//     document.getElementById('reveal-msg').innerText = `"${msg}"`;
-    
-//     // คลิกเพื่อเปิด
-//     document.getElementById('gift-container').onclick = handleOpenGift;
-// }
-// ฟังก์ชันสำหรับขออนุญาตเข้าถึง Sensor (เรียกใช้ตอนผู้รับกด "คลิกที่กล่องเพื่อเปิด")
-// async function requestShakePermission() {
-//     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-//         try {
-//             const permission = await DeviceMotionEvent.requestPermission();
-//             if (permission === 'granted') {
-//                 window.addEventListener('devicemotion', handleMotion);
-//             }
-//         } catch (error) {
-//             console.error("Permission denied", error);
-//         }
-//     } else {
-//         // สำหรับ Android หรือ Browser ที่ไม่ต้องขออนุญาต
-//         window.addEventListener('devicemotion', handleMotion);
-//     }
-// }
+// 6. SEND TO LINE (ฟังก์ชันส่งข้อความหาเพื่อน)
+async function sendToLine() {
+    // 1. เช็คว่า LIFF ID ถูกต้องและโหลดเสร็จไหม
+    if (!liff.isInitialized()) {
+        alert("LIFF ยังไม่พร้อม (Is it initialized?)");
+        return;
+    }
 
+    // 2. เช็คการ Login (บางครั้ง SharePicker ต้องการให้ Login ก่อน)
+    if (!liff.isLoggedIn()) {
+        alert("กำลังพาไป Login...");
+        liff.login();
+        return;
+    }
 
-// function handleOpenGift() {
-//     if (isOpening) return; // ถ้ากำลังทำงานอยู่ ไม่ต้องทำซ้ำ
+    // 3. ตรวจสอบ API แบบเข้มงวด
+    const canShare = await liff.isApiAvailable('shareTargetPicker');
+    if (!canShare) {
+        alert("API shareTargetPicker ไม่พร้อมใช้งาน!\n\nสาเหตุที่เป็นไปได้:\n1. ยังไม่ได้เปิด Scope ใน Console\n2. คุณไม่ได้เปิดผ่านแอป LINE\n3. URL ไม่ตรงกับ Endpoint");
+        return;
+    }
 
-//     const box = document.getElementById('gift-box');
-//     if (!box) return;
-
-//     isOpening = true; 
-//     box.classList.add('shaking'); // เริ่มสั่น
-
-//     setTimeout(() => {
-//         box.classList.remove('shaking');
-//         box.classList.add('box-explode'); // แอนิเมชันระเบิด/เปิดออก
+    // 4. ลองส่งข้อความแบบ Simple Text ก่อน (เพื่อดูว่า Picker เด้งไหม)
+    try {
+        const result = await liff.shareTargetPicker([
+            {
+                "type": "text",
+                "text": "ทดสอบส่งข้อความ"
+            }
+        ]);
         
-//         setTimeout(() => {
-//             navigateTo('page-reveal'); // เปลี่ยนไปหน้าโชว์ของขวัญ
-//         }, 600);
+        if (result) {
+            alert("แชร์สำเร็จ!");
+            liff.closeWindow();
+        } else {
+            console.log("คุณกดยกเลิก");
+        }
+    } catch (error) {
+        // นี่คือจุดที่จะบอกว่าทำไมไม่ได้
+        alert("Error เจาะจง: " + error.code + " - " + error.message);
+        console.error(error);
+    }
+}
+
+
+
+function navigateTo(pageId) {
+    // 1. หาหน้าปัจจุบันที่กำลังแสดงอยู่ (ที่มีคลาส active-page)
+    const currentPage = document.querySelector('section:not(.d-none)');
+    const targetPage = document.getElementById(pageId);
+
+    if (targetPage) {
+        // 2. ซ่อนหน้าปัจจุบันทั้งหมด
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('d-none');
+            section.classList.remove('active-page');
+        });
+
+        // 3. แสดงหน้าเป้าหมาย
+        targetPage.classList.remove('d-none');
+        
+        // 4. ถ้าเป็นหน้าแรก (page-home) ให้ใส่ active-page เพื่อโชว์พื้นหลัง
+        // แต่ถ้าเป็นหน้าเลือก (page-select) เราจะเอาพื้นหลังออกเพื่อให้ดูสะอาดตา
+        if (pageId === 'page-home') {
+            targetPage.classList.add('active-page');
+        }
+
+        // 5. กรณีไปหน้าเลือกสินค้า ให้โหลดระบบ Slider ใหม่เพื่อให้ปัดได้แม่นยำ
+        if (pageId === 'page-select') {
+            setTimeout(() => {
+                initSliderLogic(); // ฟังก์ชันที่เราเขียนไว้ตรวจจับการปัด
+            }, 100);
+        }
+    }
+}
+
+let shakeThreshold = 15; // ความแรงในการเขย่า
+let lastX, lastY, lastZ;
+
+// ฟังก์ชันเริ่มต้นหน้าจอ Unboxing
+function startUnboxingFlow(customMsg) {
+    const overlay = document.getElementById('unboxing-overlay');
+    const msgTag = document.getElementById('custom-unboxing-msg');
+    
+    if (customMsg) msgTag.innerText = customMsg;
+    overlay.classList.remove('d-none');
+
+    // ขออนุญาตใช้งาน Sensor สำหรับ iOS 13+
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    window.addEventListener('devicemotion', handleShake);
+                }
+            })
+            .catch(console.error);
+    } else {
+        window.addEventListener('devicemotion', handleShake);
+    }
+}
+
+// function handleShake(event) {
+//     let acceleration = event.accelerationIncludingGravity;
+//     let deltaX = Math.abs(lastX - acceleration.x);
+//     let deltaY = Math.abs(lastY - acceleration.y);
+//     let deltaZ = Math.abs(lastZ - acceleration.z);
+
+//     if (deltaX + deltaY + deltaZ > shakeThreshold) {
+//         revealGift(); 
+//     }
+
+//     lastX = acceleration.x;
+//     lastY = acceleration.y;
+//     lastZ = acceleration.z;
+// }
+
+// function revealGift() {
+//     window.removeEventListener('devicemotion', handleShake);
+//     const giftImg = document.getElementById('shaking-gift');
+    
+  
+//     giftImg.classList.add('open-gift-animation');
+    
+//     setTimeout(() => {
+//         document.getElementById('unboxing-overlay').classList.add('d-none');
+//         showSummary(); 
 //     }, 1000);
 // }
 
-function handleOpenGift() {
-    if (isOpening) return;
-    const box = document.getElementById('gift-box');
-    if (!box) return;
-
-    isOpening = true;
-    box.classList.add('shaking'); // กล่องสั่นก่อนเริ่มมิติ
-
-    setTimeout(() => {
-        // 1. สร้างธาตุ Portal
-        const portal = document.createElement('div');
-        portal.className = 'portal-overlay';
-        document.body.appendChild(portal);
-
-        // 2. เริ่มเปิดประตูมิติ
-        setTimeout(() => {
-            portal.classList.add('portal-active');
-            
-            // 3. เมื่อประตูมิติขยายจนเกือบเต็มจอ ให้สลับหน้าด้านหลัง
-            setTimeout(() => {
-                navigateTo('page-reveal');
-                
-                // ใส่เอฟเฟกต์ลอยออกมาให้กับ Card สินค้า
-                const revealCard = document.querySelector('#page-reveal > div');
-                if(revealCard) revealCard.classList.add('reveal-item-float');
-
-                // 4. ค่อยๆ จาง Portal ทิ้งเพื่อให้เห็นหน้าใหม่สมบูรณ์
-                setTimeout(() => {
-                    portal.style.opacity = '0';
-                    setTimeout(() => portal.remove(), 1000);
-                    isOpening = false;
-                }, 800);
-            }, 600); // จังหวะที่ Portal บังจอพอดี
-        }, 100);
-
-    }, 800); // ลดเวลาสั่นลงหน่อยเพื่อให้จังหวะ Portal ดูเร็วทันใจ
-}
-
-// --- 5. ยูทิลิตี้ ---
-// function navigateTo(pageId) {
-//     document.querySelectorAll('.page').forEach(p => {
-//         p.classList.remove('active');
-//         p.style.display = 'none';
-//     });
-    
-//     const target = document.getElementById(pageId);
-//     if (target) {
-//         target.classList.add('active');
-        
-//         // กำหนดการแสดงผล Layout
-//         const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
-//         target.style.display = isFlex ? 'flex' : 'block';
-        
-//         // เมื่อเปลี่ยนหน้า เราจะไม่สั่ง audio.pause() หรือ audio.currentTime = 0 
-//         // เพลงจะเล่นต่อไปเรื่อยๆ ตามสถานะ isMusicPlaying
-//         window.scrollTo(0, 0);
-//     }
-// }
-function navigateTo(pageId) {
-    document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active');
-        p.style.display = 'none';
-    });
-    
-    const target = document.getElementById(pageId);
-    if (target) {
-        target.classList.add('active');
-        
-        const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
-        target.style.display = isFlex ? 'flex' : 'block';
-
-        // --- จุดที่เพลงจะเริ่มทำงาน ---
-        if (pageId === 'page-sender') {
-			const audio = document.getElementById('bgm');
-			// ถ้าเพลงยังไม่เล่น ให้สั่งเล่นและตั้งค่าเป็น ON
-			if (!isMusicPlaying) {
-				audio.play().then(() => {
-					isMusicPlaying = true;
-					updateMusicUI('ON');
-				}).catch(e => {
-					isMusicPlaying = false;
-					updateMusicUI('OFF');
-				});
-			} else {
-				// ถ้าเพลงเล่นอยู่แล้ว (จากการกด startWithSound) ให้มั่นใจว่า UI แสดง ON
-				updateMusicUI('ON');
-			}
-		}
-        
-        window.scrollTo(0, 0);
-    }
-}
-
-// ปรับปรุงฟังก์ชัน toggle ให้แม่นยำขึ้น
-function toggleMusic() {
-    const audio = document.getElementById('bgm');
-    
-    // ถ้าเพลงเล่นอยู่ (isMusicPlaying เป็น true) ให้สั่งหยุด
-    if (isMusicPlaying) {
-        audio.pause();
-        isMusicPlaying = false;
-        updateMusicUI('OFF');
-    } 
-    // ถ้าเพลงหยุดอยู่ ให้สั่งเล่น
-    else {
-        audio.play().then(() => {
-            isMusicPlaying = true;
-            updateMusicUI('ON');
-        }).catch(e => console.log("Playback failed"));
-    }
-}
-
-// ฟังก์ชันอัปเดตข้อความบนปุ่ม
-function updateMusicUI(status) {
-    const s1 = document.getElementById('music-status');
-    const s2 = document.getElementById('music-status-summary');
-    if (s1) s1.innerText = status;
-    if (s2) s2.innerText = status;
-}
-
-// --- การเขย่า---
-
-// ตัวแปรสำหรับคำนวณการเขย่า (ใช้ชุดเดียวทั่วทั้งไฟล์)
-let lastX = null, lastY = null, lastZ = null;
-let moveCounter = 0; // นับจำนวนครั้งที่เขย่า เพื่อป้องกันเครื่องไหวเบาๆ แล้วเปิด
-
-function handleMotion(event) {
-    if (isOpening) return;
-
-    // เลือกใช้ acceleration (ถ้ามี) หรือ accelerationIncludingGravity
-    let acc = event.acceleration || event.accelerationIncludingGravity;
-    if (!acc || acc.x === null) return;
-
-    if (lastX !== null) {
-        // หาความแตกต่างของการเคลื่อนที่ในแต่ละแกน
-        let deltaX = Math.abs(lastX - acc.x);
-        let deltaY = Math.abs(lastY - acc.y);
-        let deltaZ = Math.abs(lastZ - acc.z);
-
-        // ค่า Threshold สำหรับ Android (แนะนำ 12 - 18)
-        // ถ้ามีการเคลื่อนไหวแรงเกิน 15 ในแกนใดแกนหนึ่ง
-        if ((deltaX > 15 && deltaY > 15) || (deltaX > 15 && deltaZ > 15) || (deltaY > 15 && deltaZ > 15)) {
-            moveCounter++;
-            if (moveCounter >= 2) { // ต้องเขย่าไป-กลับอย่างน้อย 2 ครั้งถึงจะทำงาน
-                handleOpenGift();
-                moveCounter = 0;
-            }
-        }
-    }
-
-    lastX = acc.x;
-    lastY = acc.y;
-    lastZ = acc.z;
-}
-
-// ปรับปรุงฟังก์ชันขอสิทธิ์ให้เรียกใช้ handleMotion ได้จริง
-async function requestShakePermission() {
-    // สำหรับ iOS 13+
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-            const permission = await DeviceMotionEvent.requestPermission();
-            if (permission === 'granted') {
-                window.addEventListener('devicemotion', handleMotion, true);
-                return true;
-            }
-        } catch (error) {
-            console.error("Permission denied", error);
-            return false;
-        }
-    } else {
-        // สำหรับ Android หรือ Browser ทั่วไป
-        window.addEventListener('devicemotion', handleMotion, true);
-        return true;
-    }
-}
-
-// ตรวจสอบให้แน่ใจว่า setupReceiverMode เรียกใช้ requestShakePermission
-// (จุดนี้สำคัญ: iOS ต้องให้ User คลิกก่อน 1 ครั้งถึงจะเปิด Sensor ได้)
-const giftContainer = document.getElementById('gift-container');
-if (giftContainer) {
-    giftContainer.addEventListener('click', async () => {
-        await requestShakePermission();
-        handleOpenGift(); // คลิกแล้วให้เปิดเลย พร้อมกับเปิด Sensor ทิ้งไว้ด้วย
-    });
-}
-
-// ปรับปรุงฟังก์ชันขอสิทธิ์ให้สมบูรณ์ขึ้น
-async function requestShakePermission() {
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-            const permission = await DeviceMotionEvent.requestPermission();
-            if (permission === 'granted') {
-                window.addEventListener('devicemotion', handleMotion);
-                console.log("Shake sensor: ON");
-            }
-        } catch (error) {
-            console.error("Permission denied", error);
-        }
-    } else {
-        // สำหรับ Android หรือ Desktop
-        window.addEventListener('devicemotion', handleMotion);
-    }
-}
-
-// function setupReceiverMode(params) {
-//     navigateTo('page-receiver');
-    
-//     // ตั้งค่าข้อมูลผู้รับ... (ตามโค้ดเดิม)
-
-//     // เพิ่มตัวดักจับการคลิกครั้งแรกเพื่อขอสิทธิ์ Sensor
-//     const giftContainer = document.getElementById('gift-container');
-//     giftContainer.addEventListener('click', function() {
-//         requestShakePermission(); // ขอสิทธิ์เขย่า
-//         handleOpenGift();        // ถ้าเขย่าไม่ได้ อย่างน้อยคลิกก็ต้องเปิดได้
-//     }, { once: true }); // ให้ทำงานแค่ครั้งเดียว
-// }
-
-function setupReceiverMode(params) {
-    isOpening = false; // รีเซ็ตสถานะป้องกันการค้าง
-    navigateTo('page-receiver');
-    
-    // ดึงข้อมูลจาก URL
-    const sender = params.get('sender') || "เพื่อนของคุณ";
-    const giftId = params.get('giftId');
-    const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
-
-    // แสดงชื่อผู้ส่ง
-    const recSenderName = document.getElementById('rec-sender-name');
-    if (recSenderName) recSenderName.innerText = sender;
-    
-    // เตรียมข้อมูลสินค้าหน้า Reveal
-    const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
-    const revealImg = document.getElementById('reveal-img');
-    const revealMsg = document.getElementById('reveal-msg');
-    
-    if (revealImg) revealImg.src = product.bgImg;
-    if (revealMsg) revealMsg.innerText = `"${msg}"`;
-
-    // ผูกคำสั่งคลิกที่ตัวกล่อง
-    const giftContainer = document.getElementById('gift-container');
-    if (giftContainer) {
-        giftContainer.onclick = (e) => {
-            e.preventDefault(); // ป้องกัน Browser ทำงานซ้ำซ้อน
-            requestShakePermission(); // ขอสิทธิ์เขย่าสำหรับ iPhone
-            handleOpenGift();        // สั่งเปิดกล่อง
-        };
-    }
-}
-// function setupReceiverMode(params) {
-//     isOpening = false;
-//     navigateTo('page-receiver');
-    
-//     // ตั้งค่าข้อมูลผู้ส่ง/ผู้รับตามปกติ...
-//     const sender = params.get('sender') || "เพื่อนของคุณ";
-//     document.getElementById('rec-sender-name').innerText = sender;
-
-//     const giftContainer = document.getElementById('gift-container');
-//     if (giftContainer) {
-//         // ใช้ฟังก์ชันเดียวรองรับทั้ง iOS และ Android
-//         giftContainer.addEventListener('click', async function startSensor() {
-//             // 1. ขอสิทธิ์ (สำหรับ iOS)
-//             if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-//                 try {
-//                     const response = await DeviceMotionEvent.requestPermission();
-//                     if (response === 'granted') {
-//                         window.addEventListener('devicemotion', handleMotion, true);
-//                     }
-//                 } catch (e) { console.error(e); }
-//             } else {
-//                 // 2. สำหรับ Android: ผูก Event ทันทีหลังจากมีการคลิก
-//                 window.addEventListener('devicemotion', handleMotion, true);
-//                 console.log("Android Sensor Activated");
-//             }
-            
-//             // สั่งสั่นเครื่องเบาๆ เพื่อบอกว่าระบบรับรู้แล้ว (เฉพาะ Android)
-//             if (navigator.vibrate) navigator.vibrate(50);
-
-//             // ถ้าเขย่าไม่ไปจริงๆ อย่างน้อยคลิกแล้วต้องเปิดได้
-//             handleOpenGift(); 
-//         }, { once: true }); // ให้ทำงานแค่ครั้งเดียวตอนคลิกครั้งแรก
-//     }
-// }
-
-
-function updateMusicUI(status) {
-    const s1 = document.getElementById('music-status');
-    const s2 = document.getElementById('music-status-summary');
-    
-    // ค้นหาปุ่มที่หุ้มข้อความอยู่ (ใช้ parentElement)
-    const btn1 = s1 ? s1.parentElement : null;
-    const btn2 = s2 ? s2.parentElement : null;
-
-    if (s1) s1.innerText = status;
-    if (s2) s2.innerText = status;
-
-    if (status === 'ON') {
-        if (btn1) { btn1.classList.add('music-on-glow'); btn1.classList.remove('music-off-style'); }
-        if (btn2) { btn2.classList.add('music-on-glow'); btn2.classList.remove('music-off-style'); }
-    } else {
-        if (btn1) { btn1.classList.remove('music-on-glow'); btn1.classList.add('music-off-style'); }
-        if (btn2) { btn2.classList.remove('music-on-glow'); btn2.classList.add('music-off-style'); }
-    }
-}
-
-
-
-
-// Start Application
-window.addEventListener('load', () => {
-    initSwipers();
-    startApp();
-});
+// เรียกใช้งานเมื่อโหลดเสร็จ
+window.onload = initApp;
