@@ -230,6 +230,21 @@ function initSwipers() {
  });
 }
 
+// function prepareSummary() {
+//     const receiver = document.getElementById('receiver-name').value;
+//     if (!receiver) return alert("กรุณาระบุชื่อผู้รับ");
+    
+//     document.getElementById('sum-receiver').innerText = receiver;
+//     document.getElementById('sum-sender').innerText = document.getElementById('sender-name').value || "เพื่อนของคุณ";
+//     document.getElementById('sum-msg').innerText = `"${selectedMessage}"`;
+//     document.getElementById('summary-img').src = openGift.jpg; 
+//     // document.getElementById('summary-img').src = selectedProduct.bgImg; 
+    
+//     navigateTo('page-summary');
+    
+//     // ถ้าเพลงถูกเปิดไว้ตั้งแต่หน้าก่อนหน้า (หน้า 3) เพลงจะเล่นต่อเนื่องมาถึงหน้านี้ทันที
+// }
+
 function prepareSummary() {
     const receiver = document.getElementById('receiver-name').value;
     if (!receiver) return alert("กรุณาระบุชื่อผู้รับ");
@@ -237,11 +252,11 @@ function prepareSummary() {
     document.getElementById('sum-receiver').innerText = receiver;
     document.getElementById('sum-sender').innerText = document.getElementById('sender-name').value || "เพื่อนของคุณ";
     document.getElementById('sum-msg').innerText = `"${selectedMessage}"`;
-    document.getElementById('summary-img').src = selectedProduct.bgImg; 
+    
+    // แก้ไขตรงนี้: ใส่เครื่องหมาย ' ' ครอบชื่อไฟล์
+    document.getElementById('summary-img').src = 'openGift.jpg'; 
     
     navigateTo('page-summary');
-    
-    // ถ้าเพลงถูกเปิดไว้ตั้งแต่หน้าก่อนหน้า (หน้า 3) เพลงจะเล่นต่อเนื่องมาถึงหน้านี้ทันที
 }
 
 // --- 4. ระบบสำหรับผู้รับ (Receiver Flow) ---
@@ -259,44 +274,112 @@ function prepareSummary() {
 //     document.getElementById('gift-container').onclick = handleOpenGift;
 // }
 // ฟังก์ชันสำหรับขออนุญาตเข้าถึง Sensor (เรียกใช้ตอนผู้รับกด "คลิกที่กล่องเพื่อเปิด")
+// async function requestShakePermission() {
+//     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+//         try {
+//             const permission = await DeviceMotionEvent.requestPermission();
+//             if (permission === 'granted') {
+//                 window.addEventListener('devicemotion', handleMotion);
+//             }
+//         } catch (error) {
+//             console.error("Permission denied", error);
+//         }
+//     } else {
+//         // สำหรับ Android หรือ Browser ที่ไม่ต้องขออนุญาต
+//         window.addEventListener('devicemotion', handleMotion);
+//     }
+// }
+// ปรับปรุงฟังก์ชันขอสิทธิ์ให้สมบูรณ์ขึ้น
 async function requestShakePermission() {
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
         try {
             const permission = await DeviceMotionEvent.requestPermission();
             if (permission === 'granted') {
                 window.addEventListener('devicemotion', handleMotion);
+                console.log("Shake sensor: ON");
             }
         } catch (error) {
             console.error("Permission denied", error);
         }
     } else {
-        // สำหรับ Android หรือ Browser ที่ไม่ต้องขออนุญาต
+        // สำหรับ Android หรือ Desktop
         window.addEventListener('devicemotion', handleMotion);
     }
 }
 
+// function setupReceiverMode(params) {
+//     navigateTo('page-receiver');
+    
+//     // ตั้งค่าข้อมูลผู้รับ... (ตามโค้ดเดิม)
+
+//     // เพิ่มตัวดักจับการคลิกครั้งแรกเพื่อขอสิทธิ์ Sensor
+//     const giftContainer = document.getElementById('gift-container');
+//     giftContainer.addEventListener('click', function() {
+//         requestShakePermission(); // ขอสิทธิ์เขย่า
+//         handleOpenGift();        // ถ้าเขย่าไม่ได้ อย่างน้อยคลิกก็ต้องเปิดได้
+//     }, { once: true }); // ให้ทำงานแค่ครั้งเดียว
+// }
+
 function setupReceiverMode(params) {
+    isOpening = false; // รีเซ็ตสถานะป้องกันการค้าง
     navigateTo('page-receiver');
     
-    // ตั้งค่าข้อมูลผู้รับ... (ตามโค้ดเดิม)
+    // ดึงข้อมูลจาก URL
+    const sender = params.get('sender') || "เพื่อนของคุณ";
+    const giftId = params.get('giftId');
+    const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
 
-    // เพิ่มตัวดักจับการคลิกครั้งแรกเพื่อขอสิทธิ์ Sensor
+    // แสดงชื่อผู้ส่ง
+    const recSenderName = document.getElementById('rec-sender-name');
+    if (recSenderName) recSenderName.innerText = sender;
+    
+    // เตรียมข้อมูลสินค้าหน้า Reveal
+    const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
+    const revealImg = document.getElementById('reveal-img');
+    const revealMsg = document.getElementById('reveal-msg');
+    
+    if (revealImg) revealImg.src = product.bgImg;
+    if (revealMsg) revealMsg.innerText = `"${msg}"`;
+
+    // ผูกคำสั่งคลิกที่ตัวกล่อง
     const giftContainer = document.getElementById('gift-container');
-    giftContainer.addEventListener('click', function() {
-        requestShakePermission(); // ขอสิทธิ์เขย่า
-        handleOpenGift();        // ถ้าเขย่าไม่ได้ อย่างน้อยคลิกก็ต้องเปิดได้
-    }, { once: true }); // ให้ทำงานแค่ครั้งเดียว
+    if (giftContainer) {
+        giftContainer.onclick = (e) => {
+            e.preventDefault(); // ป้องกัน Browser ทำงานซ้ำซ้อน
+            requestShakePermission(); // ขอสิทธิ์เขย่าสำหรับ iPhone
+            handleOpenGift();        // สั่งเปิดกล่อง
+        };
+    }
 }
 
-function handleOpenGift() {
-    const box = document.getElementById('gift-box');
-    if(box.classList.contains('box-explode')) return;
+// function handleOpenGift() {
+//     const box = document.getElementById('gift-box');
+//     if(box.classList.contains('box-explode')) return;
 
-    box.classList.add('shaking');
+//     box.classList.add('shaking');
+//     setTimeout(() => {
+//         box.classList.remove('shaking');
+//         box.classList.add('box-explode');
+//         setTimeout(() => navigateTo('page-reveal'), 600);
+//     }, 1000);
+// }
+
+function handleOpenGift() {
+    if (isOpening) return; // ถ้ากำลังทำงานอยู่ ไม่ต้องทำซ้ำ
+
+    const box = document.getElementById('gift-box');
+    if (!box) return;
+
+    isOpening = true; 
+    box.classList.add('shaking'); // เริ่มสั่น
+
     setTimeout(() => {
         box.classList.remove('shaking');
-        box.classList.add('box-explode');
-        setTimeout(() => navigateTo('page-reveal'), 600);
+        box.classList.add('box-explode'); // แอนิเมชันระเบิด/เปิดออก
+        
+        setTimeout(() => {
+            navigateTo('page-reveal'); // เปลี่ยนไปหน้าโชว์ของขวัญ
+        }, 600);
     }, 1000);
 }
 
@@ -403,7 +486,7 @@ let lastUpdate = 0;
 let isOpening = false; // กันการเขย่าซ้ำตอนกำลังเล่นแอนิเมชัน
 
 function handleMotion(event) {
-    if (isOpening) return;
+    if (isOpening) return; // ถ้ากำลังเปิดอยู่ ไม่ต้องตรวจจับการเขย่าซ้ำ
 
     let curTime = Date.now();
     if ((curTime - lastUpdate) > 100) {
@@ -411,10 +494,10 @@ function handleMotion(event) {
         lastUpdate = curTime;
 
         let acc = event.accelerationIncludingGravity;
+        // คำนวณความแรงจากการเปลี่ยนแปลงของแกน X, Y, Z
         let speed = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ) / diffTime * 10000;
 
-        // ปรับค่า Threshold ให้พอเหมาะ (แนะนำประมาณ 800 - 1200 สำหรับวิธีคำนวณนี้)
-        if (speed > 1000) { 
+        if (speed > 1200) { // ลองปรับค่านี้ดูครับ 1200 กำลังดี
             handleOpenGift();
         }
 
@@ -423,6 +506,19 @@ function handleMotion(event) {
         lastZ = acc.z;
     }
 }
+
+// ในฟังก์ชัน setupReceiverMode
+const giftContainer = document.getElementById('gift-container');
+if (giftContainer) {
+    giftContainer.onclick = async () => {
+        // 1. ขอสิทธิ์เขย่า (ถ้าขอแล้วจะผ่านฉลุย ถ้ายังจะเด้งถาม)
+        await requestShakePermission(); 
+        
+        // 2. สั่งเปิดกล่อง (ถ้าผู้ใช้ไม่เขย่า แต่ใช้วิธีคลิกแทน กล่องก็ต้องเปิดได้)
+        handleOpenGift(); 
+    };
+}
+
 function updateMusicUI(status) {
     const s1 = document.getElementById('music-status');
     const s2 = document.getElementById('music-status-summary');
