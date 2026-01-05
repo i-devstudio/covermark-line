@@ -35,7 +35,7 @@ let selectedProduct = PRODUCTS[0];
 let selectedMessage = LOVE_MESSAGES[0];
 let isMusicPlaying = false;
 let shakeThreshold = 15;
-let lastX, lastY, lastZ;
+// let lastX, lastY, lastZ;
 
 
 function startWithSound() {
@@ -353,34 +353,60 @@ function setupReceiverMode(params) {
 }
 
 // function handleOpenGift() {
-//     const box = document.getElementById('gift-box');
-//     if(box.classList.contains('box-explode')) return;
+//     if (isOpening) return; // ถ้ากำลังทำงานอยู่ ไม่ต้องทำซ้ำ
 
-//     box.classList.add('shaking');
+//     const box = document.getElementById('gift-box');
+//     if (!box) return;
+
+//     isOpening = true; 
+//     box.classList.add('shaking'); // เริ่มสั่น
+
 //     setTimeout(() => {
 //         box.classList.remove('shaking');
-//         box.classList.add('box-explode');
-//         setTimeout(() => navigateTo('page-reveal'), 600);
+//         box.classList.add('box-explode'); // แอนิเมชันระเบิด/เปิดออก
+        
+//         setTimeout(() => {
+//             navigateTo('page-reveal'); // เปลี่ยนไปหน้าโชว์ของขวัญ
+//         }, 600);
 //     }, 1000);
 // }
 
 function handleOpenGift() {
-    if (isOpening) return; // ถ้ากำลังทำงานอยู่ ไม่ต้องทำซ้ำ
-
+    if (isOpening) return;
     const box = document.getElementById('gift-box');
     if (!box) return;
 
-    isOpening = true; 
-    box.classList.add('shaking'); // เริ่มสั่น
+    isOpening = true;
+    box.classList.add('shaking'); // กล่องสั่นก่อนเริ่มมิติ
 
     setTimeout(() => {
-        box.classList.remove('shaking');
-        box.classList.add('box-explode'); // แอนิเมชันระเบิด/เปิดออก
-        
+        // 1. สร้างธาตุ Portal
+        const portal = document.createElement('div');
+        portal.className = 'portal-overlay';
+        document.body.appendChild(portal);
+
+        // 2. เริ่มเปิดประตูมิติ
         setTimeout(() => {
-            navigateTo('page-reveal'); // เปลี่ยนไปหน้าโชว์ของขวัญ
-        }, 600);
-    }, 1000);
+            portal.classList.add('portal-active');
+            
+            // 3. เมื่อประตูมิติขยายจนเกือบเต็มจอ ให้สลับหน้าด้านหลัง
+            setTimeout(() => {
+                navigateTo('page-reveal');
+                
+                // ใส่เอฟเฟกต์ลอยออกมาให้กับ Card สินค้า
+                const revealCard = document.querySelector('#page-reveal > div');
+                if(revealCard) revealCard.classList.add('reveal-item-float');
+
+                // 4. ค่อยๆ จาง Portal ทิ้งเพื่อให้เห็นหน้าใหม่สมบูรณ์
+                setTimeout(() => {
+                    portal.style.opacity = '0';
+                    setTimeout(() => portal.remove(), 1000);
+                    isOpening = false;
+                }, 800);
+            }, 600); // จังหวะที่ Portal บังจอพอดี
+        }, 100);
+
+    }, 800); // ลดเวลาสั่นลงหน่อยเพื่อให้จังหวะ Portal ดูเร็วทันใจ
 }
 
 // --- 5. ยูทิลิตี้ ---
@@ -482,23 +508,31 @@ function updateMusicUI(status) {
 //     }
 // }
 
-let lastUpdate = 0;
-let isOpening = false; // กันการเขย่าซ้ำตอนกำลังเล่นแอนิเมชัน
+// --- แก้ไขส่วนการเขย่าให้สมบูรณ์ ---
 
+let lastUpdate = 0;
+let lastX = 0, lastY = 0, lastZ = 0;
+
+// ฟังก์ชันตรวจจับการเคลื่อนไหว
 function handleMotion(event) {
-    if (isOpening) return; // ถ้ากำลังเปิดอยู่ ไม่ต้องตรวจจับการเขย่าซ้ำ
+    if (isOpening) return; // ถ้ากำลังเปิดอยู่ ให้หยุดทำงาน
 
     let curTime = Date.now();
+    // ตรวจสอบทุกๆ 100 มิลลิวินาที
     if ((curTime - lastUpdate) > 100) {
         let diffTime = curTime - lastUpdate;
         lastUpdate = curTime;
 
         let acc = event.accelerationIncludingGravity;
-        // คำนวณความแรงจากการเปลี่ยนแปลงของแกน X, Y, Z
+        if (!acc) return;
+
+        // คำนวณความเร็วในการเขย่า
         let speed = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ) / diffTime * 10000;
 
-        if (speed > 1200) { // ลองปรับค่านี้ดูครับ 1200 กำลังดี
-            handleOpenGift();
+        // ปรับค่าความแรง (ลองเริ่มที่ 800 ถ้าเขย่ายากให้ลดเหลือ 600)
+        if (speed > 800) { 
+            console.log("Shake detected! Speed:", speed);
+            handleOpenGift(); // เรียกฟังก์ชันเปิดกล่อง
         }
 
         lastX = acc.x;
@@ -507,16 +541,35 @@ function handleMotion(event) {
     }
 }
 
-// ในฟังก์ชัน setupReceiverMode
+// ปรับปรุงฟังก์ชันขอสิทธิ์ให้เรียกใช้ handleMotion ได้จริง
+async function requestShakePermission() {
+    // สำหรับ iOS 13+
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const permission = await DeviceMotionEvent.requestPermission();
+            if (permission === 'granted') {
+                window.addEventListener('devicemotion', handleMotion, true);
+                return true;
+            }
+        } catch (error) {
+            console.error("Permission denied", error);
+            return false;
+        }
+    } else {
+        // สำหรับ Android หรือ Browser ทั่วไป
+        window.addEventListener('devicemotion', handleMotion, true);
+        return true;
+    }
+}
+
+// ตรวจสอบให้แน่ใจว่า setupReceiverMode เรียกใช้ requestShakePermission
+// (จุดนี้สำคัญ: iOS ต้องให้ User คลิกก่อน 1 ครั้งถึงจะเปิด Sensor ได้)
 const giftContainer = document.getElementById('gift-container');
 if (giftContainer) {
-    giftContainer.onclick = async () => {
-        // 1. ขอสิทธิ์เขย่า (ถ้าขอแล้วจะผ่านฉลุย ถ้ายังจะเด้งถาม)
-        await requestShakePermission(); 
-        
-        // 2. สั่งเปิดกล่อง (ถ้าผู้ใช้ไม่เขย่า แต่ใช้วิธีคลิกแทน กล่องก็ต้องเปิดได้)
-        handleOpenGift(); 
-    };
+    giftContainer.addEventListener('click', async () => {
+        await requestShakePermission();
+        handleOpenGift(); // คลิกแล้วให้เปิดเลย พร้อมกับเปิด Sensor ทิ้งไว้ด้วย
+    });
 }
 
 function updateMusicUI(status) {
@@ -538,6 +591,9 @@ function updateMusicUI(status) {
         if (btn2) { btn2.classList.remove('music-on-glow'); btn2.classList.add('music-off-style'); }
     }
 }
+
+
+
 
 // Start Application
 window.addEventListener('load', () => {
