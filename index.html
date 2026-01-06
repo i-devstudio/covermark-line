@@ -131,14 +131,21 @@
     </div>
 
 	<section id="page-receiver" class="page">
-		<div id="permission-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 text-white">
-			<div class="text-center">
-				<p class="mb-4">แตะหน้าจอเพื่อเริ่มประสบการณ์เขย่า</p>
-				<button onclick="enableMotion()" class="px-8 py-3 bg-[#015c46] rounded-full uppercase tracking-widest text-sm">
-					คลิกเพื่อเริ่ม
-				</button>
+	
+			<div id="permission-overlay" 
+				 onclick="enableMotion()" 
+				 class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/90 text-white cursor-pointer">
+				
+				<div class="text-center px-10 pointer-events-none"> 
+					<!-- <img src="covermark-logo.png" class="w-32 mx-auto mb-10 invert opacity-50"> -->
+					<p class="text-lg tracking-widest mb-2 animate-pulse">แตะหน้าจอเพื่อเริ่ม</p>
+					<p class="text-[10px] text-gray-400 uppercase tracking-[0.2em]">ประสบการณ์เปิดของขวัญ</p>
+				</div>
 			</div>
-		</div>
+		
+			
+			
+	
 	
 		<div class="absolute inset-0 z-0">
 			<img src="openGift.jpg" class="w-full h-full object-cover" alt="Background">

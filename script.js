@@ -292,36 +292,36 @@ async function requestShakePermission() {
  /**
   * RECEIVER MODE SETUP
   */
- function setupReceiverMode(params) {
-	 isOpening = false;
-	 navigateTo('page-receiver');
+//  function setupReceiverMode(params) {
+// 	 isOpening = false;
+// 	 navigateTo('page-receiver');
 	 
-	 const sender = params.get('sender') || "เพื่อนของคุณ";
-	 const giftId = params.get('giftId');
-	 const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
+// 	 const sender = params.get('sender') || "เพื่อนของคุณ";
+// 	 const giftId = params.get('giftId');
+// 	 const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
  
-	 document.getElementById('rec-sender-name').innerText = sender;
+// 	 document.getElementById('rec-sender-name').innerText = sender;
 	 
-	 const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
-	 document.getElementById('reveal-img').src = product.bgImg;
-	 document.getElementById('reveal-msg').innerText = `"${msg}"`;
+// 	 const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
+// 	 document.getElementById('reveal-img').src = product.bgImg;
+// 	 document.getElementById('reveal-msg').innerText = `"${msg}"`;
  
-	 const giftContainer = document.getElementById('gift-container');
-	 if (giftContainer) {
-		 giftContainer.onclick = async (e) => {
-			 e.preventDefault();
-			 await requestShakePermission();
-			 handleOpenGift();
-		 };
-	 }
-	 const receiverPage = document.getElementById('page-receiver');
-    if (receiverPage) {
-        receiverPage.onclick = async () => {
-            // ถ้าเซนเซอร์ยังไม่ทำงาน ให้ขอสิทธิ์เมื่อคลิกที่ไหนก็ได้ในหน้านี้
-            await requestShakePermission();
-        };
-    }
- }
+// 	 const giftContainer = document.getElementById('gift-container');
+// 	 if (giftContainer) {
+// 		 giftContainer.onclick = async (e) => {
+// 			 e.preventDefault();
+// 			 await requestShakePermission();
+// 			 handleOpenGift();
+// 		 };
+// 	 }
+// 	 const receiverPage = document.getElementById('page-receiver');
+//     if (receiverPage) {
+//         receiverPage.onclick = async () => {
+//             // ถ้าเซนเซอร์ยังไม่ทำงาน ให้ขอสิทธิ์เมื่อคลิกที่ไหนก็ได้ในหน้านี้
+//             await requestShakePermission();
+//         };
+//     }
+//  }
  
  /**
   * UI INITIALIZATION (SWIPERS & SENDER FLOW)
@@ -421,39 +421,73 @@ async function requestShakePermission() {
  let isShaking = false;
 
 // 1. ฟังก์ชันขออนุญาต (เรียกใช้เมื่อคลิกปุ่ม)
-async function enableMotion() {
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        // สำหรับ iOS
-        const response = await DeviceMotionEvent.requestPermission();
-        if (response === 'granted') {
-            startMotionListener();
-        }
-    } else {
-        // สำหรับ Android หรือ Browser ทั่วไป
-        startMotionListener();
+// ฟังก์ชันเรียกใช้ตอนเข้าหน้า Receiver
+function setupReceiverMode(params) {
+    isOpening = false;
+    navigateTo('page-receiver');
+
+    // แสดงหน้า Overlay สีดำเพื่อรอให้ผู้ใช้แตะ
+    const overlay = document.getElementById('permission-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex'; // มั่นใจว่าแสดงผลแน่นอน
     }
-    // ปิดหน้าต่าง Overlay
-    document.getElementById('permission-overlay').style.display = 'none';
+
+    // เซ็ตข้อมูลผู้ส่ง/ข้อความ ตามเดิมของคุณ
+    const sender = params.get('sender') || "เพื่อนของคุณ";
+    const msg = params.get('msg') || "ของขวัญแด่คนพิเศษ";
+    const giftId = params.get('giftId');
+    
+    document.getElementById('rec-sender-name').innerText = sender;
+    const product = PRODUCTS.find(p => p.id == giftId) || PRODUCTS[0];
+    document.getElementById('reveal-img').src = product.bgImg;
+    document.getElementById('reveal-msg').innerText = `"${msg}"`;
 }
 
-// 2. เริ่มดักจับการเขย่าแบบ Simple
+// ฟังก์ชันเมื่อมีการแตะหน้าจอ
+async function enableMotion() {
+    // 1. ปิดหน้าสีดำทันที
+    const overlay = document.getElementById('permission-overlay');
+    if (overlay) overlay.style.display = 'none';
+
+    // 2. ขอสิทธิ์ iOS Motion Sensor
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const response = await DeviceMotionEvent.requestPermission();
+            if (response === 'granted') {
+                startMotionListener();
+            } else {
+                alert("กรุณาอนุญาตการเข้าถึงเซนเซอร์เพื่อเล่นฟีเจอร์เขย่า");
+            }
+        } catch (e) {
+            console.error("Permission request error:", e);
+        }
+    } else {
+        // สำหรับ Android หรือ Browser อื่นๆ
+        startMotionListener();
+    }
+}
+
 function startMotionListener() {
     let lastAxl = 0;
-    window.addEventListener('devicemotion', (event) => {
-        const acc = event.accelerationIncludingGravity;
-        if (!acc) return;
+    // ลบ Event เดิมก่อนเพื่อป้องกันการซ้อนกัน
+    window.removeEventListener('devicemotion', handleMotionUpdate);
+    window.addEventListener('devicemotion', handleMotionUpdate, true);
+}
 
-        // สูตรคำนวณความแรงแบบง่าย: เอาค่า X Y Z มาบวกกัน
-        let currentAxl = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-        let diff = Math.abs(currentAxl - lastAxl);
+function handleMotionUpdate(event) {
+    if (isOpening) return;
+    const acc = event.accelerationIncludingGravity;
+    if (!acc) return;
 
-        // ถ้าค่าความต่าง (Diff) มากกว่า 15 (ลองปรับเลขนี้ดู ถ้าอยากให้เขย่าง่ายขึ้นให้ลดเลขลง)
-        if (diff > 20 && !isShaking) {
-            isShaking = true;
-            handleOpenGift(); // เรียกฟังก์ชันเปิดของขวัญที่คุณมีอยู่
-        }
-        lastAxl = currentAxl;
-    });
+    // ตรวจจับความแรง
+    let currentAxl = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+    let diff = Math.abs(currentAxl - lastAxl);
+
+    if (diff > 25) { // ปรับค่านี้ตามความยากง่ายที่ต้องการ
+        handleOpenGift(); 
+    }
+    lastAxl = currentAxl;
 }
  
  window.addEventListener('load', () => {
