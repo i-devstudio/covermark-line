@@ -444,50 +444,62 @@ function setupReceiverMode(params) {
     document.getElementById('reveal-msg').innerText = `"${msg}"`;
 }
 
-// ฟังก์ชันเมื่อมีการแตะหน้าจอ
-async function enableMotion() {
-    // 1. ปิดหน้าสีดำทันที
-    const overlay = document.getElementById('permission-overlay');
-    if (overlay) overlay.style.display = 'none';
-
-    // 2. ขอสิทธิ์ iOS Motion Sensor
-    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-            const response = await DeviceMotionEvent.requestPermission();
-            if (response === 'granted') {
-                startMotionListener();
-            } else {
-                alert("กรุณาอนุญาตการเข้าถึงเซนเซอร์เพื่อเล่นฟีเจอร์เขย่า");
-            }
-        } catch (e) {
-            console.error("Permission request error:", e);
-        }
-    } else {
-        // สำหรับ Android หรือ Browser อื่นๆ
-        startMotionListener();
-    }
-}
+let lastAxl = null; // เปลี่ยนเป็น null เพื่อเช็กค่าเริ่มต้น
 
 function startMotionListener() {
-    let lastAxl = 0;
-    // ลบ Event เดิมก่อนเพื่อป้องกันการซ้อนกัน
+    console.log("Motion Listener Started");
+    lastAxl = null; // Reset ค่าทุกครั้งที่เริ่ม
     window.removeEventListener('devicemotion', handleMotionUpdate);
     window.addEventListener('devicemotion', handleMotionUpdate, true);
 }
 
 function handleMotionUpdate(event) {
     if (isOpening) return;
-    const acc = event.accelerationIncludingGravity;
-    if (!acc) return;
+    
+    // ตรวจสอบทั้ง 2 รูปแบบ (บางรุ่นใช้ acceleration, บางรุ่นใช้ accelerationIncludingGravity)
+    const acc = event.accelerationIncludingGravity || event.acceleration;
+    if (!acc || acc.x === null) return;
 
-    // ตรวจจับความแรง
+    // คำนวณความแรงรวมจากแกน X, Y, Z
     let currentAxl = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-    let diff = Math.abs(currentAxl - lastAxl);
 
-    if (diff > 25) { // ปรับค่านี้ตามความยากง่ายที่ต้องการ
-        handleOpenGift(); 
+    if (lastAxl !== null) {
+        let diff = Math.abs(currentAxl - lastAxl);
+        
+        // Debug เพื่อดูค่าความแรงใน Console (เปิดดูในมือถือได้ถ้าต่อสาย)
+        // console.log("Shake Diff:", diff);
+
+        // ค่า 25-30 คือเขย่าแรงพอประมาณ ถ้าอยากให้เขย่าง่ายขึ้นให้ลดเหลือ 20
+        if (diff > 28) { 
+            handleOpenGift(); 
+            // ลบ Event ทันทีที่เขย่าสำเร็จเพื่อป้องกันการทำงานซ้อน
+            window.removeEventListener('devicemotion', handleMotionUpdate);
+        }
     }
+    
     lastAxl = currentAxl;
+}
+
+// ฟังก์ชันเมื่อมีการแตะหน้าจอ (Overlay)
+async function enableMotion() {
+    const overlay = document.getElementById('permission-overlay');
+    if (overlay) overlay.style.display = 'none';
+
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        try {
+            const response = await DeviceMotionEvent.requestPermission();
+            if (response === 'granted') {
+                startMotionListener();
+            } else {
+                alert("จำเป็นต้องอนุญาตการเข้าถึงเซนเซอร์เพื่อเขย่าเปิดของขวัญครับ");
+            }
+        } catch (e) {
+            console.error("Permission request error:", e);
+        }
+    } else {
+        // สำหรับ Android หรือ Browser ทั่วไป
+        startMotionListener();
+    }
 }
  
  window.addEventListener('load', () => {
