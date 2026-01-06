@@ -387,7 +387,7 @@ async function requestShakePermission() {
 					 "type": "box", "layout": "vertical", "paddingAll": "0px",
 					 "contents": [{
 						 "type": "box", "layout": "vertical", "contents": [
-							 { "type": "image", "url": openGift.jpg, "size": "full", "aspectRatio": "3:4", "aspectMode": "cover" },
+							 { "type": "image", "url": "https://i-devstudio.github.io/covermark-line/openGift.jpg", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover" },
 							 { "type": "box", "layout": "vertical", "position": "absolute", "offsetBottom": "80px", "offsetStart": "0px", "offsetEnd": "0px", "alignItems": "center", "contents": [
 								 { "type": "text", "text": `To: ${receiver}`, "weight": "bold", "color": "#ffffff" },
 								 { "type": "text", "text": selectedMessage, "color": "#ffffff", "size": "sm" }
