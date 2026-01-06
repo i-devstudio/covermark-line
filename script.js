@@ -235,7 +235,7 @@ function handleMotion(event) {
                 moveCounter++;
             }
 
-            if (moveCounter >= 2) {
+            if (moveCounter >= 7) {
                 // เขย่าสำเร็จ
                 if (navigator.vibrate) navigator.vibrate(100);
                 handleOpenGift(); 
@@ -539,6 +539,48 @@ async function enableMotion() {
     } else {
         // สำหรับ Android หรือ Browser ทั่วไป
         startMotionListener();
+    }
+}
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTfxoBMNLSfb1BTwbXodc-hHhn_sjn58-UGImSeZB0FjQNh4e6bxDulh-3R1Gy7suo/exec";
+
+// 1. เช็กสิทธิ์ทันทีที่เข้าหน้า Receiver
+async function checkRedemption(userId) {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=check&userId=${userId}`);
+        const result = await response.json();
+        
+        if (result.isRedeemed) {
+            alert("ขออภัย คุณเคยรับสิทธิ์ในแคมเปญนี้ไปแล้ว");
+            liff.closeWindow(); // หรือพาไปหน้าอื่น
+        }
+    } catch (e) {
+        console.error("Check Redemption Error:", e);
+    }
+}
+
+// 2. ปรับปรุงฟังก์ชันรับสิทธิ์ ให้บันทึกข้อมูลก่อนไปหน้าเว็บภายนอก
+async function handleRedeemClick() {
+    const profile = await liff.getProfile();
+    const userId = profile.userId;
+    const sender = document.getElementById('rec-sender-name').innerText;
+    const product = selectedProduct.name;
+
+    // แสดง Loader เล็กน้อย
+    const btn = event.target;
+    btn.innerText = "กำลังบันทึกสิทธิ์...";
+    btn.disabled = true;
+
+    try {
+        // ส่งข้อมูลไปบันทึกที่ Google Sheets
+        await fetch(`${SCRIPT_URL}?action=save&userId=${userId}&product=${encodeURIComponent(product)}&sender=${encodeURIComponent(sender)}`);
+        
+        // บันทึกสำเร็จแล้วค่อยไปหน้าเว็บรับของ
+        window.location.href = `https://your-external-link.com?userId=${userId}`;
+    } catch (e) {
+        alert("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+        btn.innerText = "รับสิทธิ์ของคุณที่นี่";
+        btn.disabled = false;
     }
 }
  
