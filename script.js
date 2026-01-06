@@ -135,6 +135,7 @@
  /**
   * GIFT BOX & PORTAL ANIMATION
   */
+
  function handleOpenGift() {
 	 if (isOpening) return;
 	 const box = document.getElementById('gift-box');
@@ -326,6 +327,7 @@ async function requestShakePermission() {
  /**
   * UI INITIALIZATION (SWIPERS & SENDER FLOW)
   */
+
  function initSwipers() {
 	 const prodWrapper = document.getElementById('product-list');
 	 const extendedList = [...PRODUCTS, ...PRODUCTS];
@@ -415,6 +417,7 @@ async function requestShakePermission() {
  
  async function startWithSound() {
 	await requestShakePermission();
+	handleMusicPlay(true);
 	navigateTo('page-sender'); 
  }
 
