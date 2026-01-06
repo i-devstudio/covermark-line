@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#f2f2f2] text-[#333]"> <div id="app" class="relative max-w-[960px] mx-auto min-h-screen bg-white shadow-2xl">
+<body class="bg-[#f2f2f2] text-[#333]"> <div class="relative max-w-[960px] mx-auto min-h-screen bg-white shadow-2xl">
     <!-- <div id="loader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white transition-opacity duration-500">
         <img src="covermark-logo.png" alt="Logo" class="w-50 mb-4 animate-pulse">
         <div class="w-12 h-1 bg-gray-100 overflow-hidden">
@@ -131,6 +131,15 @@
     </div>
 
 	<section id="page-receiver" class="page">
+		<div id="permission-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 text-white">
+			<div class="text-center">
+				<p class="mb-4">แตะหน้าจอเพื่อเริ่มประสบการณ์เขย่า</p>
+				<button onclick="enableMotion()" class="px-8 py-3 bg-[#015c46] rounded-full uppercase tracking-widest text-sm">
+					คลิกเพื่อเริ่ม
+				</button>
+			</div>
+		</div>
+	
 		<div class="absolute inset-0 z-0">
 			<img src="openGift.jpg" class="w-full h-full object-cover" alt="Background">
 			<div class="absolute inset-0 bg-black/20"></div>
@@ -184,6 +193,8 @@
 				</p>
 			</div>
 		</div>
+
+
 		
 	
 		<div class="w-full max-w-sm mt-10 space-y-4">

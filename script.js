@@ -417,8 +417,48 @@ async function requestShakePermission() {
 	await requestShakePermission();
 	navigateTo('page-sender'); 
  }
+
+ let isShaking = false;
+
+// 1. ฟังก์ชันขออนุญาต (เรียกใช้เมื่อคลิกปุ่ม)
+async function enableMotion() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        // สำหรับ iOS
+        const response = await DeviceMotionEvent.requestPermission();
+        if (response === 'granted') {
+            startMotionListener();
+        }
+    } else {
+        // สำหรับ Android หรือ Browser ทั่วไป
+        startMotionListener();
+    }
+    // ปิดหน้าต่าง Overlay
+    document.getElementById('permission-overlay').style.display = 'none';
+}
+
+// 2. เริ่มดักจับการเขย่าแบบ Simple
+function startMotionListener() {
+    let lastAxl = 0;
+    window.addEventListener('devicemotion', (event) => {
+        const acc = event.accelerationIncludingGravity;
+        if (!acc) return;
+
+        // สูตรคำนวณความแรงแบบง่าย: เอาค่า X Y Z มาบวกกัน
+        let currentAxl = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+        let diff = Math.abs(currentAxl - lastAxl);
+
+        // ถ้าค่าความต่าง (Diff) มากกว่า 15 (ลองปรับเลขนี้ดู ถ้าอยากให้เขย่าง่ายขึ้นให้ลดเลขลง)
+        if (diff > 20 && !isShaking) {
+            isShaking = true;
+            handleOpenGift(); // เรียกฟังก์ชันเปิดของขวัญที่คุณมีอยู่
+        }
+        lastAxl = currentAxl;
+    });
+}
  
  window.addEventListener('load', () => {
 	 initSwipers();
 	 startApp();
  });
+
+ 
