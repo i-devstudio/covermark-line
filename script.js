@@ -576,7 +576,7 @@ async function handleRedeemClick() {
         await fetch(`${SCRIPT_URL}?action=save&userId=${userId}&product=${encodeURIComponent(product)}&sender=${encodeURIComponent(sender)}`);
         
         // บันทึกสำเร็จแล้วค่อยไปหน้าเว็บรับของ
-        window.location.href = `https://your-external-link.com?userId=${userId}`;
+        window.location.href = `https://cdp-occ-crm.pams.ai/crm/covermark/register?userId=${userId}`;
     } catch (e) {
         alert("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
         btn.innerText = "รับสิทธิ์ของคุณที่นี่";
