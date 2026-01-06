@@ -68,25 +68,42 @@
 	 }
  }
  
- function navigateTo(pageId) {
-	 document.querySelectorAll('.page').forEach(p => {
-		 p.classList.remove('active');
-		 p.style.display = 'none';
-	 });
+//  function navigateTo(pageId) {
+// 	 document.querySelectorAll('.page').forEach(p => {
+// 		 p.classList.remove('active');
+// 		 p.style.display = 'none';
+// 	 });
 	 
-	 const target = document.getElementById(pageId);
-	 if (target) {
-		 target.classList.add('active');
-		 const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
-		 target.style.display = isFlex ? 'flex' : 'block';
+// 	 const target = document.getElementById(pageId);
+// 	 if (target) {
+// 		 target.classList.add('active');
+// 		 const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
+// 		 target.style.display = isFlex ? 'flex' : 'block';
  
-		 // Auto-play music when arriving at sender page
-		 if (pageId === 'page-sender' && !isMusicPlaying) {
-			 handleMusicPlay(true);
-		 }
-		 window.scrollTo(0, 0);
-	 }
- }
+// 		 // Auto-play music when arriving at sender page
+// 		 if (pageId === 'page-sender' && !isMusicPlaying) {
+// 			 handleMusicPlay(true);
+// 		 }
+// 		 window.scrollTo(0, 0);
+// 	 }
+//  }
+ function navigateTo(pageId) {
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+    });
+    
+    const target = document.getElementById(pageId);
+    if (target) {
+        target.classList.add('active');
+        const isFlex = ['page-home', 'page-condition', 'page-receiver'].includes(pageId);
+        target.style.display = isFlex ? 'flex' : 'block';
+        
+        // ลบโค้ดส่วน if (pageId === 'page-sender'...) ตรงนี้ออกไปเลยครับ
+        
+        window.scrollTo(0, 0);
+    }
+}
  
  /**
   * MUSIC CONTROL
