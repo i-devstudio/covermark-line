@@ -6,21 +6,21 @@
  const PRODUCTS = [
 	 { 
 		 id: 1, 
-		 name: "Moisture Veil LX", 
-		 img: "https://covermark.co.th/wp-content/uploads/2020/03/MoistureVeilLX.jpg", 
-		 bgImg: "https://covermark.co.th/wp-content/uploads/2020/04/4935059CMMVNM.png" 
+		 name: "Skinbright Cream CC", 
+		 img: "https://covermark.co.th/wp-content/uploads/2021/07/Skinbright-cream-cc-1.jpg", 
+		 bgImg: "https://th-test-11.slatic.net/p/8151db9492ddb04aee9fc28f925d898a.jpg" 
 	 },
 	 { 
 		 id: 2, 
-		 name: "Flawless Fit", 
-		 img: "https://covermark.co.th/wp-content/uploads/2020/04/FlawlessFit.jpg", 
-		 bgImg: "https://covermark.co.th/wp-content/uploads/2020/04/104234189_1524006301105607_3220439053025674423_n-1.jpg" 
+		 name: "Moisture Charge Serum", 
+		 img: "https://covermark.co.th/wp-content/uploads/2020/04/MCS.png", 
+		 bgImg: "https://scontent.fbkk12-3.fna.fbcdn.net/v/t1.6435-9/119973031_1607023319470571_7054897150241389889_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=mnwsSmHgsgEQ7kNvwEDmhfN&_nc_oc=AdmVEL3IXRU57whbL6-vuH3sxqq8YevQEl_pwxcHgcJa1njcVOkvfGIDYBuMy6wiwSd9tn0NK8083Hj9XI6BoyYX&_nc_zt=23&_nc_ht=scontent.fbkk12-3.fna&_nc_gid=2-5aFlwP1SCfDKQQerBGzw&oh=00_AfoIAth6Xmy9ixzRxqOnOYRSxu6U5alft9dIY-wnbS7UOQ&oe=6983DCC3" 
 	 },
 	 { 
 		 id: 3, 
-		 name: "Moisturecoat Gel (พร้อมพัฟ)", 
+		 name: "Moisturecoat Gel", 
 		 img: "https://covermark.co.th/wp-content/uploads/2021/11/Covermark-Moisture-Coat-Gel-600x600-1.png", 
-		 bgImg: "https://cosmenet-private.s3-bkk.nipa.cloud/upload/Maker/product-info/covermark/covermark-moisture-coat-gel-1.jpg" 
+		 bgImg: "https://mpics.mgronline.com/pics/Images/564000011707002.JPEG" 
 	 }
  ];
  
@@ -387,7 +387,7 @@ async function requestShakePermission() {
 					 "type": "box", "layout": "vertical", "paddingAll": "0px",
 					 "contents": [{
 						 "type": "box", "layout": "vertical", "contents": [
-							 { "type": "image", "url": selectedProduct.bgImg, "size": "full", "aspectRatio": "3:4", "aspectMode": "cover" },
+							 { "type": "image", "url": openGift.jpg, "size": "full", "aspectRatio": "3:4", "aspectMode": "cover" },
 							 { "type": "box", "layout": "vertical", "position": "absolute", "offsetBottom": "80px", "offsetStart": "0px", "offsetEnd": "0px", "alignItems": "center", "contents": [
 								 { "type": "text", "text": `To: ${receiver}`, "weight": "bold", "color": "#ffffff" },
 								 { "type": "text", "text": selectedMessage, "color": "#ffffff", "size": "sm" }
