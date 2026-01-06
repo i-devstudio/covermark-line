@@ -108,22 +108,42 @@
  /**
   * MUSIC CONTROL
   */
- function handleMusicPlay(shouldPlay) {
-	 const audio = document.getElementById('bgm');
-	 if (shouldPlay) {
-		 audio.play().then(() => {
-			 isMusicPlaying = true;
-			 updateMusicUI('ON');
-		 }).catch(() => {
-			 isMusicPlaying = false;
-			 updateMusicUI('OFF');
-		 });
-	 } else {
-		 audio.pause();
-		 isMusicPlaying = false;
-		 updateMusicUI('OFF');
-	 }
- }
+//  function handleMusicPlay(shouldPlay) {
+// 	 const audio = document.getElementById('bgm');
+// 	 if (shouldPlay) {
+// 		 audio.play().then(() => {
+// 			 isMusicPlaying = true;
+// 			 updateMusicUI('ON');
+// 		 }).catch(() => {
+// 			 isMusicPlaying = false;
+// 			 updateMusicUI('OFF');
+// 		 });
+// 	 } else {
+// 		 audio.pause();
+// 		 isMusicPlaying = false;
+// 		 updateMusicUI('OFF');
+// 	 }
+//  }
+
+function handleMusicPlay(shouldPlay) {
+    const audio = document.getElementById('bgm');
+    if (!audio) return;
+
+    if (shouldPlay) {
+        // เพิ่มการตั้งค่าเวลาเริ่มที่ 0 เพื่อความชัวร์
+        if (audio.paused) {
+            audio.currentTime = 0; 
+            audio.play().then(() => {
+                isMusicPlaying = true;
+                updateMusicUI('ON');
+            }).catch(e => console.error("Playback failed:", e));
+        }
+    } else {
+        audio.pause();
+        isMusicPlaying = false;
+        updateMusicUI('OFF');
+    }
+}
  
  function toggleMusic() {
 	 handleMusicPlay(!isMusicPlaying);
